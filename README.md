@@ -2,6 +2,8 @@
 
 Aplicación web monolítica tipo SPA para la administración de vehículos en una empresa de transporte tipo ride hailing. Incluye autenticación de administradores, gestión de vehículos y recuperación de contraseña con preguntas secretas.
 
+---
+
 ## Tecnologías
 
 -   **Frontend**: Vue 3 + TypeScript + Vuetify
@@ -9,6 +11,8 @@ Aplicación web monolítica tipo SPA para la administración de vehículos en un
 -   **Autenticación**: JWT
 -   **Recuperación de contraseña**: Preguntas secretas
 -   **Contenedores**: Docker + Docker Compose
+
+---
 
 ## Requisitos
 
@@ -22,6 +26,8 @@ Aplicación web monolítica tipo SPA para la administración de vehículos en un
 -   Node.js 20+
 -   Yarn o npm
 -   MongoDB
+
+---
 
 ## Instalación y ejecución
 
@@ -99,12 +105,16 @@ SECURITY_QUESTIONS=¿Nombre de tu primera mascota?,¿Ciudad natal?,¿Comida favo
 VITE_API_URL=http://localhost:5000
 ```
 
+---
+
 ## Funcionalidades principales
 
 -   Inicio de sesión de administradores
 -   Registro y listado de vehículos
 -   Edición y eliminación de vehículos
 -   Recuperación de contraseña mediante preguntas secretas
+
+---
 
 ## Estructura del proyecto
 
@@ -122,6 +132,8 @@ ride-hailing-spa/
 ├── docker-compose.yml
 └── README.md
 ```
+
+---
 
 ## Comandos útiles
 
@@ -155,10 +167,14 @@ docker-compose down -v
 docker-compose down --volumes --remove-orphans
 ```
 
+---
+
 ## Notas
 
 -   Asegúrate de que el puerto 27017 no esté ocupado por otra instancia local de MongoDB.
 -   Esta app está pensada para ser usada por administradores internos, no usuarios finales.
+
+---
 
 # Autor
 
