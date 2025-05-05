@@ -25,7 +25,7 @@ Aplicación web monolítica tipo SPA para la administración de vehículos en un
 
 -   Node.js 20+
 -   Yarn o npm
--   MongoDB
+-   MongoDB 8
 
 ---
 
@@ -92,17 +92,19 @@ yarn dev        # o npm run dev
 ### Backend (./backend/.env)
 
 ```env
+APP_NAME=ride-hailing-spa
 PORT=5000
 MONGO_URI=mongodb://mongodb:27017/ride-hailing
 JWT_SECRET=clave-super-secreta
 JWT_EXPIRES_IN=1d
-SECURITY_QUESTIONS=¿Nombre de tu primera mascota?,¿Ciudad natal?,¿Comida favorita?
+LOG_LEVEL=debug
 ```
 
 ### Frontend (./frontend/.env)
 
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_HOST=http://localhost:5000
+VITE_API_BASE_PATH=/api
 ```
 
 ---
@@ -121,16 +123,46 @@ VITE_API_URL=http://localhost:5000
 ```
 ride-hailing-spa/
 │
-├── backend/        # API REST con Express y MongoDB
-│   ├── src/
-│   └── Dockerfile
+├── backend/                # API REST con Express y MongoDB
+│   ├── src/                # Código fuente de la aplicación
+│   │   ├── config/         # Configuraciones generales (conexión a la base de datos, etc.)
+│   │   ├── controllers/    # Controladores que manejan la lógica de las rutas
+│   │   ├── middlewares/    # Middlewares personalizados (autenticación, etc.)
+│   │   ├── models/         # Modelos de Mongoose para MongoDB
+│   │   ├── routes/         # Definición de rutas Express agrupadas por recurso
+│   │   ├── seeders/        # Archivos para poblar la base de datos con datos iniciales
+│   │   ├── services/       # Lógica de negocio y conexión entre controladores y modelos
+│   │   ├── types/          # Definiciones de tipos y extensiones de interfaces
+│   │   ├── utils/          # Funciones utilitarias, logger, type guards, etc.
+│   │   ├── validation/     # validaciones para las rutas.
+│   │   ├── app.ts          # Configuración principal de Express (middlewares, rutas, etc.)
+│   │   └── server.ts       # Punto de entrada del servidor (listen)
+│   ├── .dockerignore       # Archivos ignorados por docker
+│   ├── .env                # Variables de entorno
+│   ├── .gitignore          # Archivos ignorados por Git
+│   ├── Dockerfile          # Imagen de Docker
+│   ├── package.json        # Dependencias y scripts del proyecto
+│   └── tsconfig.json       # Configuración de TypeScript
 │
-├── frontend/       # SPA con Vue 3 y Vuetify
-│   ├── src/
-│   └── Dockerfile
+├── frontend/               # SPA con Vue 3 y Vuetify
+│   ├── src/                # Código fuente de la aplicación
+│   │   ├── components/     # Componentes generales
+│   │   │   └── layouts/    # Plantillas
+│   │   ├── plugins/        # Plugins de Vue que extienden la funcionalidad de la aplicación
+│   │   ├── constants/      # Constantes utilizadas en toda la aplicación (por ejemplo, rutas, mensajes, etc.)
+│   │   ├── router/         # Configuración de las rutas de la aplicación (Vue Router)
+│   │   ├── stores/         # Almacenes de estado (Pinia) para manejar el estado global de la aplicación
+│   │   └── views/          # Configuración de Vite
+│   ├── .dockerignore       # Archivos ignorados por docker
+│   ├── .env                # Variables de entorno
+│   ├── .gitignore          # Archivos ignorados por Git
+│   ├── Dockerfile          # Imagen de Docker
+│   ├── package.json        # Dependencias y scripts del proyecto
+│   ├── tsconfig.json       # Configuración de TypeScript
+│   └── vite.config.ts      # Configuración de Vite
 │
-├── docker-compose.yml
-└── README.md
+├── docker-compose.yml      # Orquestación de contenedores
+└── README.md               # Documentación del proyecto
 ```
 
 ---
