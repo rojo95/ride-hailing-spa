@@ -36,11 +36,8 @@ const seedUsers = async () => {
         logger.debug("Users inserted correctly");
         process.exit(0);
     } catch (error) {
-        logger.error(
-            `Error inserting users: ${
-                error instanceof Error ? error.message : error
-            }`
-        );
+        logger.debug(`Error inserting users`);
+        logger.error(error);
         process.exit(1);
     }
 };

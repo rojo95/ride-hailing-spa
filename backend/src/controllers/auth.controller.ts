@@ -7,6 +7,7 @@ import {
 } from "../types/auth.types";
 import logger from "../utils/logger";
 import UserService from "../services/users.service";
+import { handleErrorMessage } from "../utils/handleErrorMessage";
 
 class AuthController {
     static async register(
@@ -23,16 +24,17 @@ class AuthController {
             );
             res.status(201).json(user);
         } catch (error) {
-            logger.error("Error in user registration: ", error);
+            logger.debug(`Error in user registration: ${req.originalUrl}`);
+            logger.error(error);
 
-            if (error instanceof Error) {
-                res.status(400).json({ error: error.message });
-            } else {
-                res.status(400).json({
-                    error: "Ha ocurrido un error desconocido al registrar el usuario.",
-                    fullError: error,
-                });
-            }
+            res.status(400).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Ha ocurrido un error desconocido al registrar el usuario.",
+                }),
+                fullError: error,
+            });
         }
     }
 
@@ -42,16 +44,17 @@ class AuthController {
             const { token, user } = await AuthService.login(email, password);
             res.status(200).json({ token, user });
         } catch (error) {
-            logger.error("User login error: ", error);
+            logger.debug(`User login error. ${req.originalUrl}`);
+            logger.error(error);
 
-            if (error instanceof Error) {
-                res.status(400).json({ error: error.message });
-            } else {
-                res.status(400).json({
-                    error: "Ha ocurrido un error desconocido al intentar iniciar sesión",
-                    fullError: error,
-                });
-            }
+            res.status(400).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Ha ocurrido un error desconocido al intentar iniciar sesión",
+                }),
+                fullError: error,
+            });
         }
     }
 
@@ -66,16 +69,19 @@ class AuthController {
 
             res.status(200).json({ question: user.secretQuestion });
         } catch (error) {
-            logger.error("Error trying to obtain the secret question: ", error);
+            logger.debug(
+                `Error trying to obtain the secret question: ${req.originalUrl}`
+            );
+            logger.error(error);
 
-            if (error instanceof Error) {
-                res.status(400).json({ error: error.message });
-            } else {
-                res.status(400).json({
-                    error: "Ha ocurrido un error desconocido al intentar consultar la pregunta secreta",
-                    fullError: error,
-                });
-            }
+            res.status(400).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Ha ocurrido un error desconocido al intentar consultar la pregunta secreta",
+                }),
+                fullError: error,
+            });
         }
     }
 
@@ -92,16 +98,19 @@ class AuthController {
             );
             res.status(200).json(user);
         } catch (error) {
-            logger.error("Error trying to recover password: ", error);
+            logger.debug(
+                `Error trying to recover password: ${req.originalUrl}`
+            );
+            logger.error(error);
 
-            if (error instanceof Error) {
-                res.status(400).json({ error: error.message });
-            } else {
-                res.status(400).json({
-                    error: "Ha ocurrido un error desconocido al intentar cambiar la contraseña.",
-                    fullError: error,
-                });
-            }
+            res.status(400).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Ha ocurrido un error desconocido al intentar cambiar la contraseña.",
+                }),
+                fullError: error,
+            });
         }
     }
 }

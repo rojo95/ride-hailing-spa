@@ -29,6 +29,7 @@ const authMiddleware = (
         next();
     } catch (error) {
         logger.warn("Invalid token");
+        logger.error(error);
         res.status(400).json({ error: "Token no válido" });
     }
 };

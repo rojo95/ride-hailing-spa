@@ -14,5 +14,5 @@ connectDB()
         });
     })
     .catch((err: unknown) => {
-        logger.error("Error connecting to MongoDB:", err);
+        logger.error(err);
     });

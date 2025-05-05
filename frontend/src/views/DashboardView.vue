@@ -31,7 +31,6 @@ onMounted(async () => {
         const response = await fetchWithAuthToken<User>({ url: "users/me" });
         user.value = response;
     } catch (err) {
-        alert("Error al consultar datos.");
         console.error(err);
     }
 });
