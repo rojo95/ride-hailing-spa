@@ -22,6 +22,12 @@ export default defineConfig(({ mode }) => {
                     secure: true,
                     changeOrigin: false,
                 },
+                "/geo": {
+                    target: "https://nominatim.openstreetmap.org",
+                    secure: true,
+                    changeOrigin: true,
+                    rewrite: (path) => path.replace(/^\/geo/, ""),
+                },
             },
         },
         resolve: {

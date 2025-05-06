@@ -1,17 +1,23 @@
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model";
 import logger from "../utils/logger";
+import { connectDB } from "../config/database.config";
 
 dotenv.config();
 
 const seedUsers = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI || "");
+    const shouldReset =
+        process.argv.includes("--reset") || process.argv.includes("--r");
 
-        // Elimina todos los usuarios existentes
-        await User.deleteMany({});
+    try {
+        await connectDB();
+
+        if (shouldReset) {
+            // Elimina todos los usuarios existentes
+            logger.info("Resetting the Users collection data");
+            await User.deleteMany({});
+        }
 
         // Usuarios de ejemplo
         const users = [
