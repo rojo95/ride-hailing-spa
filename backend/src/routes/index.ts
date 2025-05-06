@@ -15,6 +15,6 @@ router.use("/auth", authRoutes);
 router.use("/users", authMiddleware, userRoutes);
 
 // vehicles routes
-router.use("/vehicles", vehicleRoutes);
+router.use("/vehicles", authMiddleware, vehicleRoutes);
 
 export default router;
