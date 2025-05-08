@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import logger from "../utils/logger";
 
 export default class FileController {
     static async upload(req: Request, res: Response) {
@@ -34,6 +35,8 @@ export default class FileController {
                 url: imageUrl,
             });
         } catch (error) {
+            logger.debug(`Error uploading file: ${req.originalUrl}`);
+            logger.error(error);
             res.status(500).json({ error: "Error al subir archivo" });
         }
     }

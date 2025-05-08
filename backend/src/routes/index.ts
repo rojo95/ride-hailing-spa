@@ -6,6 +6,7 @@ import authMiddleware from "../middlewares/auth.middleware";
 import vehicleRoutes from "./vehicles.routes";
 import carBrandRoutes from "./carBrands.routes";
 import fileRoutes from "./files.routes";
+import routeRoutes from "./routes.routes";
 
 dotenv.config();
 
@@ -23,7 +24,10 @@ router.use("/vehicles", authMiddleware, vehicleRoutes);
 // brand routes
 router.use("/brands", authMiddleware, carBrandRoutes);
 
-// uupload files
+// upload files
 router.use("/files", authMiddleware, fileRoutes);
+
+// routes about vehicles routes
+router.use("/routes", authMiddleware, routeRoutes);
 
 export default router;

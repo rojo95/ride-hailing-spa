@@ -15,7 +15,7 @@ type RegisterVehicleDriverRequest = RegisterDriverRequest &
 export default class VehicleController {
     static async all(_: Request, res: Response): Promise<void> {
         try {
-            const vehicles = await VehicleService.getAllVehicles();
+            const vehicles = await VehicleService.getAllVehiclesWithLastRoute();
             res.status(200).json(vehicles);
         } catch (error) {
             res.status(500).json({

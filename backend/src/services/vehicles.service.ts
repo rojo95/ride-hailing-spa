@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import Vehicle, { IVehicle } from "../models/vehicle.model";
 import { RegisterVehicleRequest } from "../types/vehicle";
+import Route from "../models/route.model";
 
 export default class VehicleService {
     static async getAllVehicles() {
@@ -42,5 +43,38 @@ export default class VehicleService {
         await vehicle.save();
 
         return vehicle.toObject();
+    }
+
+    static async vehicleById(
+        _id: Types.ObjectId
+    ): Promise<IVehicle | undefined> {
+        const vehicle = await Vehicle.findOne({ _id });
+
+        return vehicle?.toObject();
+    }
+
+    static async getAllVehiclesWithLastRoute() {
+        const vehicles = await Vehicle.find({})
+            .populate({
+                path: "model_id",
+                populate: { path: "brand_id" },
+            })
+            .populate("driver_id");
+
+        const results = await Promise.all(
+            vehicles.map(async (vehicle) => {
+                // Buscar la última ruta para cada vehículo, ordenando por `createdAt` de forma descendente
+                const lastRoute = await Route.findOne({
+                    vehicle_id: vehicle._id,
+                }).sort({ createdAt: -1 }); // Obtiene la última ruta
+
+                return {
+                    ...vehicle.toObject(),
+                    lastRoute, // Incluye la última ruta en el objeto del vehículo
+                };
+            })
+        );
+
+        return results;
     }
 }
