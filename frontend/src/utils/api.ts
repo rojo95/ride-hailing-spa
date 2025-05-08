@@ -71,8 +71,6 @@ export const fetchWithAuthToken = async <T>({
             ...options, // Aquí no incluimos headers para evitar sobrescribir
         });
 
-        console.log(response);
-
         return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.status === 498) auth.logout();

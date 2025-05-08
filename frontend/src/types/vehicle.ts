@@ -1,5 +1,6 @@
 import type { CarModel } from "./carModel";
 import type { Driver } from "./driver";
+import type { Route } from "./route";
 
 export interface Vehicle {
     _id: string;
@@ -11,6 +12,7 @@ export interface Vehicle {
     driver_id: Driver;
     status_id: number;
     picture: string;
+    lastRoute?: Route;
 }
 
 export interface VehicleForm {

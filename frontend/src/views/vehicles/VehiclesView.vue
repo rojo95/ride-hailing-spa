@@ -6,10 +6,10 @@
                 <router-link to="/vehicles/create">
                     <v-btn
                         color="green"
-                        variant="outlined"
+                        variant="elevated"
                         class="text-white rounded-lg"
                     >
-                        <v-icon color="green">mdi-plus</v-icon>
+                        <v-icon color="white">mdi-plus</v-icon>
                     </v-btn>
                 </router-link>
             </v-card-title>
@@ -60,7 +60,7 @@
 
                                 <div
                                     class="rounded-circle me-3"
-                                    :class="getStatus(item.status_id).color"
+                                    :class="getStatus(item).color"
                                     style="width: 10px; height: 10px"
                                 />
                             </div>
@@ -77,7 +77,7 @@
                                     Color: {{ item.color }}<br />
                                     Capacidad: {{ item.capacity }}<br />
                                     Estado:
-                                    {{ getStatus(item.status_id).description }}
+                                    {{ getStatus(item).description }}
                                     <br />
 
                                     <div class="text-center">
@@ -137,7 +137,7 @@
                     <template v-if="isActiveModal">
                         <div class="leaflet-map">
                             <l-map
-                                ref="map"
+                                ref="mapRef"
                                 v-model:zoom="zoom"
                                 v-model:center="center"
                                 :useGlobalLeaflet="false"
@@ -145,7 +145,7 @@
                             >
                                 <!-- capa base -->
                                 <l-tile-layer
-                                    url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     layer-type="base"
                                     name="Stadia Maps Basemap"
                                 ></l-tile-layer>
@@ -154,23 +154,40 @@
                                 <l-marker
                                     v-if="fromMarker"
                                     :lat-lng="fromMarker"
+                                    :draggable="true"
+                                    @dragstart="disableMapDragging"
+                                    @dragend="enableMapDragging"
+                                    @moveend="onFromMarkerMoved"
                                 />
-                                <l-marker v-if="toMarker" :lat-lng="toMarker" />
+
+                                <l-marker
+                                    v-if="toMarker"
+                                    :lat-lng="toMarker"
+                                    :draggable="true"
+                                    @dragstart="disableMapDragging"
+                                    @dragend="enableMapDragging"
+                                    @moveend="onToMarkerMoved"
+                                />
 
                                 <!-- línea entre puntos -->
-                                <l-polyline
+                                <!-- <l-polyline
                                     v-if="fromMarker && toMarker"
                                     :lat-lngs="[fromMarker, toMarker]"
                                     :weight="4"
-                                    color="blue"
-                                />
+                                    color="red"
+                                /> -->
                             </l-map>
                         </div>
                     </template>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn @click="toggleModal">Cerrar</v-btn>
+                    <div class="py-5">
+                        <v-btn @click="closeMap">Cancelar</v-btn>
+                        <v-btn @click="createRoute" color="green"
+                            >Crear Ruta</v-btn
+                        >
+                    </div>
                 </v-card-actions>
             </v-card>
         </template>
@@ -182,9 +199,15 @@ import { nextTick, onMounted, ref, watch } from "vue";
 import type { Vehicle } from "../../types/vehicle";
 import { useVehicleStore } from "../../stores/vehicles";
 import { useRoute } from "vue-router";
-import { LMap, LTileLayer, LMarker, LPolyline } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
 import L from "leaflet";
 import "leaflet-routing-machine";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+import { useRouteStore } from "../../stores/routes";
+import Swal from "sweetalert2";
+import type { Location } from "../../types/location";
+import { showToast } from "../../utils/swalToast";
+import { STATUSES } from "../../constants/routes";
 
 function getMenuItems(vehicle: Vehicle) {
     return [
@@ -224,22 +247,19 @@ const center = ref<[number, number]>([51.505, -0.09]);
 const clickCount = ref(0);
 const fromMarker = ref<[number, number] | null>(null);
 const toMarker = ref<[number, number] | null>(null);
-
+const routeStore = useRouteStore();
 const routeControl = ref<any>(null);
 const fromLatLng = ref<L.LatLng | null>(null);
 const toLatLng = ref<L.LatLng | null>(null);
+const activeVehicle = ref<string | null>(null);
 
-const getStatus = (status_id: number) => {
-    switch (status_id) {
-        case 1:
-            return { description: "Libre", color: "bg-green" };
-        case 2:
-            return { description: "Ocupado", color: "bg-red" };
-        case 3:
-            return { description: "Inactivo", color: "bg-grey" };
-        default:
-            return { description: "Inactivo", color: "bg-grey" };
+const getStatus = ({ lastRoute }: Vehicle) => {
+    console.log(lastRoute);
+
+    if (lastRoute?.status === STATUSES.ACTIVE) {
+        return { description: "Ocupado", color: "bg-red" };
     }
+    return { description: "Libre", color: "bg-green" };
 };
 
 async function getVehicles() {
@@ -254,24 +274,54 @@ async function getVehicles() {
 }
 
 async function getLastRoute(_id: string) {
-    toggleModal();
-}
-
-function toggleModal() {
-    isActiveModal.value = !isActiveModal.value;
+    activeVehicle.value = _id;
+    isActiveModal.value = true;
+    setTimeout(() => {
+        cleanMap();
+    }, 100);
 }
 
 const mapRef = ref();
 
-watch(isActiveModal, (val) => {
+watch(isActiveModal, async (val) => {
     if (val) {
-        nextTick(() => {
-            setTimeout(() => {
-                mapRef.value?.leafletObject?.invalidateSize();
-            }, 300); // Espera a que el modal esté visible
-        });
+        await nextTick();
+        setTimeout(() => {
+            const map = mapRef.value?.leafletObject;
+            map?.invalidateSize();
+            map?.on("click", onMapClick);
+        }, 300);
+    } else if (!activeVehicle.value) {
+        cleanMap();
     }
 });
+
+function closeMap() {
+    activeVehicle.value = null;
+    isActiveModal.value = false;
+}
+
+function cleanMap() {
+    const map = mapRef.value?.leafletObject;
+    map?.off("click", onMapClick);
+    if (routeControl.value) {
+        map.removeControl(routeControl.value);
+        routeControl.value = null;
+    }
+    // Limpiar estado
+    fromMarker.value = null;
+    toMarker.value = null;
+    fromLatLng.value = null;
+    toLatLng.value = null;
+    clickCount.value = 0;
+}
+
+function disableMapDragging() {
+    mapRef.value?.leafletObject.dragging.disable();
+}
+function enableMapDragging() {
+    mapRef.value?.leafletObject.dragging.enable();
+}
 
 function getCurrentLocation() {
     if (navigator.geolocation) {
@@ -297,12 +347,12 @@ function onMapClick(e: L.LeafletMouseEvent) {
     const { latlng } = e;
 
     if (clickCount.value === 0) {
-        if (fromMarker.value) fromMarker.value = null;
         fromMarker.value = [latlng.lat, latlng.lng];
+        fromLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 1;
     } else {
-        if (toMarker.value) toMarker.value = null;
         toMarker.value = [latlng.lat, latlng.lng];
+        toLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 0;
         drawRoute();
     }
@@ -320,20 +370,73 @@ function drawRoute() {
         routeWhileDragging: true,
         show: false,
         addWaypoints: false,
-    }).addTo(mapRef.value.leafletObject);
+        fitSelectedRoutes: false,
+        createMarker: () => null,
+    } as any).addTo(mapRef.value.leafletObject);
 }
 
-watch(isActiveModal, (val) => {
-    if (val) {
-        nextTick(() => {
-            setTimeout(() => {
-                const map = mapRef.value?.leafletObject;
-                map.invalidateSize();
-                map.on("click", onMapClick); // <-- aquí agregas el click listener
-            }, 300);
-        });
-    }
-});
+function onFromMarkerMoved(e: L.LeafletEvent) {
+    const marker = e.target as L.Marker;
+    fromLatLng.value = marker.getLatLng();
+    if (toLatLng.value) drawRoute();
+}
+
+function onToMarkerMoved(e: L.LeafletEvent) {
+    const marker = e.target as L.Marker;
+    toLatLng.value = marker.getLatLng();
+    if (fromLatLng.value) drawRoute();
+}
+
+async function createRoute() {
+    if (!activeVehicle?.value || !fromLatLng.value || !toLatLng.value) return;
+
+    const vehicle = activeVehicle?.value;
+
+    const from: Location = {
+        lat: fromLatLng.value?.lat,
+        lon: fromLatLng.value?.lng,
+    };
+    const to: Location = {
+        lat: toLatLng.value?.lat,
+        lon: toLatLng.value?.lng,
+    };
+
+    isActiveModal.value = false;
+
+    Swal.fire({
+        title: "¿Seguro que desea registrar los datos?",
+        text: "Verifique que los datos tanto del conductor como del vehículo sean correctos.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#4CAF50",
+        cancelButtonColor: "#BDBDBD",
+        confirmButtonText: "Aceptar",
+        cancelButtonText: "Cancelar",
+        customClass: {
+            popup: "my-swal-popup",
+        },
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await routeStore.createRoute({
+                    from,
+                    to,
+                    status: STATUSES.ACTIVE,
+                    vehicle_id: vehicle,
+                });
+
+                activeVehicle.value = null;
+            } catch (err) {
+                showToast({
+                    message: routeStore.error || "Error al registrar vehículo.",
+                    icon: "error",
+                });
+            }
+        } else {
+            isActiveModal.value = true;
+        }
+    });
+}
 
 onMounted(() => {
     getVehicles();
@@ -351,5 +454,9 @@ onMounted(() => {
 .leaflet-map {
     height: 400px;
     width: 100%;
+}
+
+.my-swal-popup {
+    z-index: 1000000000;
 }
 </style>
