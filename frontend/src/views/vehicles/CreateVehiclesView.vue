@@ -305,6 +305,7 @@ import { useVehicleStore } from "../../stores/vehicles";
 import type { CarBrandResponse } from "../../types/carBrand";
 import type { VehicleForm } from "../../types/vehicle";
 import router from "../../router";
+import Swal from "sweetalert2";
 
 const vehicleStore = useVehicleStore();
 const error = ref("");
@@ -477,27 +478,35 @@ async function getCarBrands() {
 
 async function registerVehicle() {
     error.value = "";
-
-    const pregunta = confirm(
-        "¿Ha revisado la información del conductor y del vehículo para asegurarse de que es correcta?"
-    );
-    if (!pregunta) return;
-
     if (!isFormVehicleValid || !isFormValid) return;
-    try {
-        const response = await vehicleStore.createVehicle({
-            driver: formDriver,
-            vehicle: formVehicle,
-        });
 
-        if (response && response.driver && response.vehicle)
-            return router.push({
-                path: "/vehicles",
-                query: { msg: "Vehículo registrado de manera exitosa" },
-            });
-    } catch (err) {
-        error.value = vehicleStore.error || "Error al registrar vehículo.";
-    }
+    Swal.fire({
+        title: "¿Seguro que desea registrar los datos?",
+        text: "Verifique que los datos tanto del conductor como del vehículo sean correctos.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#4CAF50",
+        cancelButtonColor: "#BDBDBD",
+        confirmButtonText: "Aceptar",
+        cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const response = await vehicleStore.createVehicle({
+                    driver: formDriver,
+                    vehicle: formVehicle,
+                });
+                if (response && response.driver && response.vehicle)
+                    return router.push({
+                        path: "/vehicles",
+                        query: { msg: "Vehículo registrado de manera exitosa" },
+                    });
+            } catch (err) {
+                error.value =
+                    vehicleStore.error || "Error al registrar vehículo.";
+            }
+        }
+    });
 }
 
 onMounted(() => {
