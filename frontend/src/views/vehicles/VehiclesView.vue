@@ -161,13 +161,6 @@ function getMenuItems(vehicle: Vehicle) {
     ];
 }
 
-const items = [
-    { action: () => {}, title: "Gestionar Ruta" },
-    { action: () => {}, title: "Ver Más" },
-    { action: () => {}, title: "Editar" },
-    { action: () => {}, title: "Deshabilitar" },
-];
-
 const openGroup = ref<string | null>(null); // Cambia a null para que no haya grupos abiertos inicialmente
 const vehicleStore = useVehicleStore();
 const route = useRoute();
