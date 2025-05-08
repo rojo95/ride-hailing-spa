@@ -6,6 +6,7 @@ import vuetify from "./plugins/vuetify.ts";
 import { createPinia } from "pinia";
 import VueSweetalert2 from "vue-sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+import "leaflet/dist/leaflet.css";
 
 createApp(App)
     .use(router)

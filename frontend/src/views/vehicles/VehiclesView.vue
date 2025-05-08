@@ -124,21 +124,55 @@
     <v-alert v-if="message" type="success" class="mt-4 toast-message">{{
         message
     }}</v-alert>
+
+    <v-dialog v-model="isActiveModal" max-width="800">
+        <template v-slot:default>
+            <v-card>
+                <v-card-title>Seleccione el Origen del Viaje</v-card-title>
+                <v-card-text>
+                    <div class="py-3">
+                        <p>Origen:</p>
+                        <p>Destino:</p>
+                    </div>
+                    <template v-if="isActiveModal">
+                        <div class="leaflet-map">
+                            <l-map
+                                ref="map"
+                                v-model:zoom="zoom"
+                                v-model:center="center"
+                                :useGlobalLeaflet="false"
+                            >
+                                <l-tile-layer
+                                    url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+                                    layer-type="base"
+                                    name="Stadia Maps Basemap"
+                                ></l-tile-layer>
+                            </l-map>
+                        </div>
+                    </template>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="toggleModal">Cerrar</v-btn>
+                </v-card-actions>
+            </v-card>
+        </template>
+    </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 import type { Vehicle } from "../../types/vehicle";
 import { useVehicleStore } from "../../stores/vehicles";
 import { useRoute } from "vue-router";
+import { LMap, LTileLayer } from "@vue-leaflet/vue-leaflet";
+import { type Location } from "../../types/location";
 
 function getMenuItems(vehicle: Vehicle) {
     return [
         {
             title: "Gestionar Ruta",
-            action: () => {
-                console.log("Gestionar Ruta de:", vehicle._id);
-            },
+            action: () => getLastRoute(vehicle._id),
         },
         {
             title: "Ver Más",
@@ -166,6 +200,10 @@ const vehicleStore = useVehicleStore();
 const route = useRoute();
 const message = route.query.msg;
 const vehicles = ref<Vehicle[]>([]);
+const isActiveModal = ref<boolean>(false);
+const zoom = ref(6);
+const center = ref<[number, number] | null>(null);
+const newRoute = ref<{ from: Location; to: Location } | null>(null);
 
 const getStatus = (status_id: number) => {
     switch (status_id) {
@@ -191,8 +229,50 @@ async function getVehicles() {
     }
 }
 
+async function getLastRoute(_id: string) {
+    toggleModal();
+}
+
+function toggleModal() {
+    isActiveModal.value = !isActiveModal.value;
+}
+
+const mapRef = ref();
+
+watch(isActiveModal, (val) => {
+    if (val) {
+        nextTick(() => {
+            setTimeout(() => {
+                mapRef.value?.leafletObject?.invalidateSize();
+            }, 300); // Espera a que el modal esté visible
+        });
+    }
+});
+
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                center.value = [
+                    position.coords.latitude,
+                    position.coords.longitude,
+                ];
+            },
+            (error) => {
+                console.error("Error obteniendo ubicación:", error);
+                // Fallback por si falla
+                center.value = [51.505, -0.09];
+            }
+        );
+    } else {
+        console.warn("Geolocalización no soportada.");
+        center.value = [51.505, -0.09];
+    }
+}
+
 onMounted(() => {
     getVehicles();
+    getCurrentLocation();
 });
 </script>
 
@@ -201,5 +281,10 @@ onMounted(() => {
     position: fixed;
     right: 10px;
     bottom: 10px;
+}
+
+.leaflet-map {
+    height: 400px;
+    width: 100%;
 }
 </style>
