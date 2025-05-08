@@ -71,7 +71,7 @@ const seedVehiclesAndDrivers = async () => {
                 color: "Blanco",
                 capacity: 4,
                 driver_id: insertedDrivers[0]._id,
-                status_id: 3,
+                status_id: false,
             },
             {
                 plate: "DEF456",
@@ -80,7 +80,7 @@ const seedVehiclesAndDrivers = async () => {
                 color: "Negro",
                 capacity: 4,
                 driver_id: insertedDrivers[1]._id,
-                status_id: 1,
+                status_id: true,
             },
             {
                 plate: "GHI789",
@@ -89,7 +89,7 @@ const seedVehiclesAndDrivers = async () => {
                 color: "Rojo",
                 capacity: 5,
                 driver_id: insertedDrivers[2]._id,
-                status_id: 2,
+                status_id: true,
             },
         ];
 

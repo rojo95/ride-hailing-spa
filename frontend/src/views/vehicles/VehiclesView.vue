@@ -57,6 +57,7 @@
                                         >
                                     </div>
                                 </v-list-item-content>
+
                                 <div
                                     class="rounded-circle me-3"
                                     :class="getStatus(item.status_id).color"
@@ -72,11 +73,46 @@
                                 Detalles del Vehículo
                             </v-list-item-title>
                             <v-list-item-content>
-                                Color: {{ item.color }}<br />
-                                Capacidad: {{ item.capacity }}<br />
-                                Estado:
-                                {{ getStatus(item.status_id).description }}
-                                <br />
+                                <div class="d-flex justify-space-between">
+                                    Color: {{ item.color }}<br />
+                                    Capacidad: {{ item.capacity }}<br />
+                                    Estado:
+                                    {{ getStatus(item.status_id).description }}
+                                    <br />
+
+                                    <div class="text-center">
+                                        <v-menu location="start">
+                                            <template
+                                                v-slot:activator="{ props }"
+                                            >
+                                                <v-btn
+                                                    icon="$vuetify"
+                                                    variant="flat"
+                                                    v-bind="props"
+                                                >
+                                                    <v-icon>
+                                                        mdi-dots-vertical
+                                                    </v-icon>
+                                                </v-btn>
+                                            </template>
+
+                                            <v-list>
+                                                <v-list-item
+                                                    v-for="(
+                                                        menuItem, index
+                                                    ) in getMenuItems(item)"
+                                                    :key="index"
+                                                    :value="index"
+                                                    @click="menuItem.action"
+                                                >
+                                                    <v-list-item-title>{{
+                                                        menuItem.title
+                                                    }}</v-list-item-title>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                    </div>
+                                </div>
                             </v-list-item-content>
                         </v-list-item>
                     </v-list-item-group>
@@ -95,6 +131,42 @@ import { onMounted, ref } from "vue";
 import type { Vehicle } from "../../types/vehicle";
 import { useVehicleStore } from "../../stores/vehicles";
 import { useRoute } from "vue-router";
+
+function getMenuItems(vehicle: Vehicle) {
+    return [
+        {
+            title: "Gestionar Ruta",
+            action: () => {
+                console.log("Gestionar Ruta de:", vehicle._id);
+            },
+        },
+        {
+            title: "Ver Más",
+            action: () => {
+                console.log("Ver Más de:", vehicle._id);
+            },
+        },
+        {
+            title: "Editar",
+            action: () => {
+                console.log("Editar:", vehicle._id);
+            },
+        },
+        {
+            title: "Deshabilitar",
+            action: () => {
+                console.log("Deshabilitar:", vehicle._id);
+            },
+        },
+    ];
+}
+
+const items = [
+    { action: () => {}, title: "Gestionar Ruta" },
+    { action: () => {}, title: "Ver Más" },
+    { action: () => {}, title: "Editar" },
+    { action: () => {}, title: "Deshabilitar" },
+];
 
 const openGroup = ref<string | null>(null); // Cambia a null para que no haya grupos abiertos inicialmente
 const vehicleStore = useVehicleStore();

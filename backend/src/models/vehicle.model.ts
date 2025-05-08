@@ -10,7 +10,7 @@ export interface IVehicle extends Document {
     color: string;
     capacity: number;
     driver_id: Types.ObjectId;
-    status_id: number;
+    status_id: boolean;
 }
 
 const vehicleSchema = new Schema<IVehicle>(
@@ -29,7 +29,7 @@ const vehicleSchema = new Schema<IVehicle>(
             required: true,
             ref: Driver,
         },
-        status_id: { type: Number, default: 1 },
+        status_id: { type: Boolean, default: true },
     },
     {
         timestamps: true,
