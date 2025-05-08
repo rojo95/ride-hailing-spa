@@ -226,6 +226,7 @@ import Swal from "sweetalert2";
 import type { Location } from "../../types/location";
 import { showToast } from "../../utils/swalToast";
 import { STATUSES } from "../../constants/routes";
+import axios from "axios";
 
 function getMenuItems(vehicle: Vehicle) {
     return [
@@ -284,8 +285,8 @@ async function getAddressFromLatLng(lat: number, lon: number): Promise<string> {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
 
     try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await axios.get(url);
+        const { data } = await response;
         return data.display_name || "Dirección no encontrada";
     } catch (error) {
         console.error("Error al obtener la dirección:", error);
