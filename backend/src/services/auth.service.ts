@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/user.model";
 import { jwtConfig } from "../config/jwt.config";
 
-class AuthService {
+export default class AuthService {
     static async register(
         email: string,
         password: string,
@@ -66,5 +66,3 @@ class AuthService {
         return user;
     }
 }
-
-export default AuthService;

@@ -21,7 +21,7 @@ const vehicleSchema = new Schema<IVehicle>(
             required: true,
             ref: CarModel,
         },
-        year: { type: Date, required: true, default: new Date() },
+        year: { type: Date, required: true, default: new Date().getFullYear() },
         color: { type: String, required: true },
         capacity: { type: Number, required: true },
         driver_id: {

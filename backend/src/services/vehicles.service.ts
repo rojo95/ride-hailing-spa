@@ -1,6 +1,8 @@
-import Vehicle from "../models/vehicle.model";
+import { Types } from "mongoose";
+import Vehicle, { IVehicle } from "../models/vehicle.model";
+import { RegisterVehicleRequest } from "../types/vehicle";
 
-class VehicleService {
+export default class VehicleService {
     static async getAllVehicles() {
         const users = await Vehicle.find({})
             .populate({
@@ -11,6 +13,34 @@ class VehicleService {
 
         return users;
     }
-}
 
-export default VehicleService;
+    static async create({
+        plate,
+        model_id,
+        year,
+        color,
+        capacity,
+        picture,
+        driver_id,
+    }: RegisterVehicleRequest): Promise<IVehicle> {
+        const existingVehicle = await Vehicle.findOne({ plate });
+
+        if (existingVehicle) {
+            throw new Error("El vehículo con esta matrícula ya existe.");
+        }
+
+        const vehicle = new Vehicle({
+            plate,
+            model_id,
+            year,
+            color,
+            capacity,
+            picture,
+            driver_id,
+        });
+
+        await vehicle.save();
+
+        return vehicle.toObject();
+    }
+}

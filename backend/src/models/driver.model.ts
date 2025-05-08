@@ -5,8 +5,8 @@ export interface IDriver extends Document {
     _id: Types.ObjectId;
     idCard: string;
     name: string;
+    lastname: string;
     avatar: string;
-    rating: number;
     licenseExpiry: Date;
 }
 
@@ -17,8 +17,8 @@ interface IDriverDocument extends IDriver, Document {}
 const DriverSchema = new Schema<IDriverDocument>({
     idCard: { type: String, required: true, unique: true },
     name: { type: String, required: true },
+    lastname: { type: String, required: true },
     avatar: { type: String, required: true },
-    rating: { type: Number, required: true, min: 0, max: 5 },
     licenseExpiry: { type: Date, required: true },
 });
 

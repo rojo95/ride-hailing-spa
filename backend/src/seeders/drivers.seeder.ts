@@ -33,7 +33,8 @@ const seedVehiclesAndDrivers = async () => {
         const drivers = [
             {
                 idCard: "V-12345678",
-                name: "Jose Gonzales",
+                name: "Jose",
+                lastname: "Gonzales",
                 avatar: "https://randomuser.me/api/portraits/men/85.jpg",
                 rating: 4.5,
                 licenseExpiry: new Date("2024-12-31"),
@@ -41,14 +42,16 @@ const seedVehiclesAndDrivers = async () => {
 
             {
                 idCard: "V-234567890",
-                name: "María Requena",
+                name: "María",
+                lastname: "Requena",
                 avatar: "https://randomuser.me/api/portraits/women/86.jpg",
                 rating: 4.7,
                 licenseExpiry: new Date("2024-06-30"),
             },
             {
                 idCard: "V-345678901",
-                name: "Roberto Gómez",
+                name: "Roberto",
+                lastname: "Gómez",
                 avatar: "https://randomuser.me/api/portraits/men/87.jpg",
                 rating: 4.8,
                 licenseExpiry: new Date("2025-01-15"),

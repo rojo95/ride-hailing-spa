@@ -4,7 +4,7 @@ import User from "../models/user.model";
 const basicUserProjection = { email: 1, role: 1 };
 const userWithSecretProjection = { email: 1, role: 1, secretQuestion: 1 };
 
-class UserService {
+export default class UserService {
     static async getUserByField(
         field: "email" | "_id",
         value: string,
@@ -38,5 +38,3 @@ class UserService {
         return users;
     }
 }
-
-export default UserService;

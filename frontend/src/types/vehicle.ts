@@ -10,4 +10,15 @@ export interface Vehicle {
     capacity: number;
     driver_id: Driver;
     status_id: number;
+    picture: string;
+}
+
+export interface VehicleForm {
+    plate: string;
+    brand_id: string | null;
+    model_id: string | null;
+    year: number | null;
+    color: string;
+    capacity: number | null;
+    picture: File | null;
 }

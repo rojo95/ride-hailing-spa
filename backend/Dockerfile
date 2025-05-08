@@ -12,4 +12,4 @@ EXPOSE 5000
 
 RUN apt-get update && apt-get install -y wait-for-it
 
-CMD ["sh", "-c", "wait-for-it mongo:27017 -- npm run seed:brands:reset && npm run seed:models:reset && npm run seed:users:reset && npm run dev"]
+CMD ["sh", "-c", "wait-for-it mongo:27017 -- npm run seed:brands:reset && npm run seed:models:reset && npm run seed:users:reset && npm run seed:drivers:reset && npm run dev"]

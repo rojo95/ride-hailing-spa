@@ -1,7 +1,18 @@
 <template>
     <div class="pa-10">
         <v-card class="w-100" width="300">
-            <v-card-title>Vehículos</v-card-title>
+            <v-card-title class="d-flex justify-space-between">
+                <p>Vehículos</p>
+                <router-link to="/vehicles/create">
+                    <v-btn
+                        color="green"
+                        variant="outlined"
+                        class="text-white rounded-lg"
+                    >
+                        <v-icon color="green">mdi-plus</v-icon>
+                    </v-btn>
+                </router-link>
+            </v-card-title>
 
             <v-list>
                 <v-list-group
@@ -21,10 +32,12 @@
                                 >
                                     <div>
                                         <v-avatar size="24" class="mr-2">
-                                            <img
+                                            <v-img
                                                 :src="item.driver_id.avatar"
                                                 alt="Avatar"
                                                 width="100%"
+                                                height="100%"
+                                                cover
                                             />
                                         </v-avatar>
                                     </div>
@@ -55,17 +68,15 @@
 
                     <v-list-item-group>
                         <v-list-item>
+                            <v-list-item-title class="font-weight-medium">
+                                Detalles del Vehículo
+                            </v-list-item-title>
                             <v-list-item-content>
-                                <v-list-item-title class="font-weight-medium">
-                                    Detalles del Vehículo
-                                </v-list-item-title>
-                                <v-list-item-content>
-                                    Color: {{ item.color }}<br />
-                                    Capacidad: {{ item.capacity }}<br />
-                                    Estado:
-                                    {{ getStatus(item.status_id).description }}
-                                    <br />
-                                </v-list-item-content>
+                                Color: {{ item.color }}<br />
+                                Capacidad: {{ item.capacity }}<br />
+                                Estado:
+                                {{ getStatus(item.status_id).description }}
+                                <br />
                             </v-list-item-content>
                         </v-list-item>
                     </v-list-item-group>
@@ -73,16 +84,22 @@
             </v-list>
         </v-card>
     </div>
+
+    <v-alert v-if="message" type="success" class="mt-4 toast-message">{{
+        message
+    }}</v-alert>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import type { Vehicle } from "../../types/vehicle";
 import { useVehicleStore } from "../../stores/vehicles";
+import { useRoute } from "vue-router";
 
 const openGroup = ref<string | null>(null); // Cambia a null para que no haya grupos abiertos inicialmente
 const vehicleStore = useVehicleStore();
-
+const route = useRoute();
+const message = route.query.msg;
 const vehicles = ref<Vehicle[]>([]);
 
 const getStatus = (status_id: number) => {
@@ -113,3 +130,11 @@ onMounted(() => {
     getVehicles();
 });
 </script>
+
+<style>
+.toast-message {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+}
+</style>

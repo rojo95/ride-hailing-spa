@@ -71,9 +71,11 @@ export const fetchWithAuthToken = async <T>({
             ...options, // Aquí no incluimos headers para evitar sobrescribir
         });
 
+        console.log(response);
+
         return response.data;
     } catch (error) {
-        console.error("Error fetching with token:", error);
+        if (axios.isAxiosError(error) && error.status === 498) auth.logout();
         throw error;
     }
 };
@@ -84,8 +86,7 @@ export const handleAxiosError = (err: unknown) => {
             err.response?.data?.error ||
             err.response?.data?.message ||
             "Error desconocido";
-        const statusCode = err.response?.status;
-        return `Error ${statusCode}: ${errorMessage}`;
+        return `Error: ${errorMessage}`;
     }
     return "Error desconocido";
 };

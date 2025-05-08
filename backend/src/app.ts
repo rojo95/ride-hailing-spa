@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import apiRoutes from "./routes/index";
+import path from "path";
 
 dotenv.config();
 
@@ -20,5 +21,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api", apiRoutes);
+
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 export default app;

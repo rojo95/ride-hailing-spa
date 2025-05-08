@@ -10,6 +10,7 @@ import { useAuthStore } from "../stores/auth";
 import GuestLayout from "../components/layouts/GuestLayout.vue";
 import RegisterView from "../views/RegisterView.vue";
 import VehiclesView from "../views/vehicles/VehiclesView.vue";
+import CreateVehiclesView from "../views/vehicles/CreateVehiclesView.vue";
 
 const routes: RouteRecordRaw[] = [
     {
@@ -38,7 +39,17 @@ const routes: RouteRecordRaw[] = [
                 component: UsersView,
                 meta: { requiresAuth: true, requiresAdmin: true },
             },
-            { path: "/vehicles", name: "vehicles", component: VehiclesView },
+            {
+                path: "/vehicles",
+                name: "vehicles",
+                component: VehiclesView,
+                children: [],
+            },
+            {
+                path: "/vehicles/create",
+                name: "vehicles-create",
+                component: CreateVehiclesView,
+            },
         ],
     },
 ];
