@@ -128,11 +128,29 @@
     <v-dialog v-model="isActiveModal" max-width="800">
         <template v-slot:default>
             <v-card>
-                <v-card-title>Seleccione el Origen del Viaje</v-card-title>
+                <v-card-title>
+                    {{
+                        clickCount === 0
+                            ? !origen
+                                ? "Seleccione"
+                                : "Click para Modificar"
+                            : clickCount === 1
+                            ? !destino
+                                ? "Seleccione"
+                                : "Click para Modificar"
+                            : "Click para Modificar"
+                    }}
+                    el {{ clickCount === 0 ? "Origen" : "Destino" }} del Viaje
+                </v-card-title>
                 <v-card-text>
-                    <div class="py-3">
-                        <p>Origen:</p>
-                        <p>Destino:</p>
+                    <div class="pb-3 d-flex ga-10">
+                        <p>
+                            <strong v-if="origen">Origen:</strong> {{ origen }}
+                        </p>
+                        <p>
+                            <strong v-if="destino">Destino:</strong>
+                            {{ destino }}
+                        </p>
                     </div>
                     <template v-if="isActiveModal">
                         <div class="leaflet-map">
@@ -242,7 +260,7 @@ const route = useRoute();
 const message = route.query.msg;
 const vehicles = ref<Vehicle[]>([]);
 const isActiveModal = ref<boolean>(false);
-const zoom = ref(6);
+const zoom = ref(17);
 const center = ref<[number, number]>([51.505, -0.09]);
 const clickCount = ref(0);
 const fromMarker = ref<[number, number] | null>(null);
@@ -252,15 +270,28 @@ const routeControl = ref<any>(null);
 const fromLatLng = ref<L.LatLng | null>(null);
 const toLatLng = ref<L.LatLng | null>(null);
 const activeVehicle = ref<string | null>(null);
+const origen = ref<string>("");
+const destino = ref<string>("");
 
 const getStatus = ({ lastRoute }: Vehicle) => {
-    console.log(lastRoute);
-
     if (lastRoute?.status === STATUSES.ACTIVE) {
         return { description: "Ocupado", color: "bg-red" };
     }
     return { description: "Libre", color: "bg-green" };
 };
+
+async function getAddressFromLatLng(lat: number, lon: number): Promise<string> {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.display_name || "Dirección no encontrada";
+    } catch (error) {
+        console.error("Error al obtener la dirección:", error);
+        return "Error al obtener la dirección";
+    }
+}
 
 async function getVehicles() {
     try {
@@ -314,6 +345,8 @@ function cleanMap() {
     fromLatLng.value = null;
     toLatLng.value = null;
     clickCount.value = 0;
+    origen.value = "";
+    destino.value = "";
 }
 
 function disableMapDragging() {
@@ -350,10 +383,18 @@ function onMapClick(e: L.LeafletMouseEvent) {
         fromMarker.value = [latlng.lat, latlng.lng];
         fromLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 1;
+        getAddressFromLatLng(latlng.lat, latlng.lng).then((address) => {
+            // Actualiza la dirección de Origen
+            origen.value = address;
+        });
     } else {
         toMarker.value = [latlng.lat, latlng.lng];
         toLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 0;
+        getAddressFromLatLng(latlng.lat, latlng.lng).then((address) => {
+            // Actualiza la dirección de Destino
+            destino.value = address;
+        });
         drawRoute();
     }
 }
@@ -452,7 +493,7 @@ onMounted(() => {
 }
 
 .leaflet-map {
-    height: 400px;
+    height: 300px;
     width: 100%;
 }
 
