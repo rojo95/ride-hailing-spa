@@ -141,12 +141,29 @@
                                 v-model:zoom="zoom"
                                 v-model:center="center"
                                 :useGlobalLeaflet="false"
+                                @click="onMapClick"
                             >
+                                <!-- capa base -->
                                 <l-tile-layer
                                     url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
                                     layer-type="base"
                                     name="Stadia Maps Basemap"
                                 ></l-tile-layer>
+
+                                <!-- marcadores -->
+                                <l-marker
+                                    v-if="fromMarker"
+                                    :lat-lng="fromMarker"
+                                />
+                                <l-marker v-if="toMarker" :lat-lng="toMarker" />
+
+                                <!-- línea entre puntos -->
+                                <l-polyline
+                                    v-if="fromMarker && toMarker"
+                                    :lat-lngs="[fromMarker, toMarker]"
+                                    :weight="4"
+                                    color="blue"
+                                />
                             </l-map>
                         </div>
                     </template>
@@ -165,8 +182,9 @@ import { nextTick, onMounted, ref, watch } from "vue";
 import type { Vehicle } from "../../types/vehicle";
 import { useVehicleStore } from "../../stores/vehicles";
 import { useRoute } from "vue-router";
-import { LMap, LTileLayer } from "@vue-leaflet/vue-leaflet";
-import { type Location } from "../../types/location";
+import { LMap, LTileLayer, LMarker, LPolyline } from "@vue-leaflet/vue-leaflet";
+import L from "leaflet";
+import "leaflet-routing-machine";
 
 function getMenuItems(vehicle: Vehicle) {
     return [
@@ -202,8 +220,14 @@ const message = route.query.msg;
 const vehicles = ref<Vehicle[]>([]);
 const isActiveModal = ref<boolean>(false);
 const zoom = ref(6);
-const center = ref<[number, number] | null>(null);
-const newRoute = ref<{ from: Location; to: Location } | null>(null);
+const center = ref<[number, number]>([51.505, -0.09]);
+const clickCount = ref(0);
+const fromMarker = ref<[number, number] | null>(null);
+const toMarker = ref<[number, number] | null>(null);
+
+const routeControl = ref<any>(null);
+const fromLatLng = ref<L.LatLng | null>(null);
+const toLatLng = ref<L.LatLng | null>(null);
 
 const getStatus = (status_id: number) => {
     switch (status_id) {
@@ -266,9 +290,50 @@ function getCurrentLocation() {
         );
     } else {
         console.warn("Geolocalización no soportada.");
-        center.value = [51.505, -0.09];
     }
 }
+
+function onMapClick(e: L.LeafletMouseEvent) {
+    const { latlng } = e;
+
+    if (clickCount.value === 0) {
+        if (fromMarker.value) fromMarker.value = null;
+        fromMarker.value = [latlng.lat, latlng.lng];
+        clickCount.value = 1;
+    } else {
+        if (toMarker.value) toMarker.value = null;
+        toMarker.value = [latlng.lat, latlng.lng];
+        clickCount.value = 0;
+        drawRoute();
+    }
+}
+
+function drawRoute() {
+    if (!fromLatLng.value || !toLatLng.value) return;
+
+    if (routeControl.value) {
+        mapRef.value.leafletObject.removeControl(routeControl.value);
+    }
+
+    routeControl.value = L.Routing.control({
+        waypoints: [fromLatLng.value, toLatLng.value],
+        routeWhileDragging: true,
+        show: false,
+        addWaypoints: false,
+    }).addTo(mapRef.value.leafletObject);
+}
+
+watch(isActiveModal, (val) => {
+    if (val) {
+        nextTick(() => {
+            setTimeout(() => {
+                const map = mapRef.value?.leafletObject;
+                map.invalidateSize();
+                map.on("click", onMapClick); // <-- aquí agregas el click listener
+            }, 300);
+        });
+    }
+});
 
 onMounted(() => {
     getVehicles();
