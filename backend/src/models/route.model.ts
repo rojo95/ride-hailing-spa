@@ -17,6 +17,11 @@ export interface IRoute extends IRouteBase, HydratedDocument<IRouteBase> {
     _id: Types.ObjectId;
 }
 
+export interface IRouteUpdateStatus {
+    _id: Types.ObjectId;
+    status: number;
+}
+
 const routeScheme = new Schema<IRoute>(
     {
         from: { type: { lat: Number, lon: Number }, required: true },

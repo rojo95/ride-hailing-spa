@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import logger from "../utils/logger";
 import { handleErrorMessage } from "../utils/handleErrorMessage";
 import VehicleService from "../services/vehicles.service";
-import { IRoute, IRouteBase } from "../models/route.model";
+import { IRoute, IRouteBase, IRouteUpdateStatus } from "../models/route.model";
 import { STATUSES } from "../constants/routes";
 
 export default class RouteController {
@@ -24,7 +24,7 @@ export default class RouteController {
             );
             res.status(200).json(route);
         } catch (error) {
-            logger.debug(`Error getting users: ${req.originalUrl}`);
+            logger.debug(`Error getting vehicles: ${req.originalUrl}`);
             logger.error(error);
 
             res.status(500).json({
@@ -62,13 +62,46 @@ export default class RouteController {
             });
             res.status(200).json(route);
         } catch (error) {
-            logger.debug(`Error crating route: ${req.originalUrl}`);
+            logger.debug(`Error creating route: ${req.originalUrl}`);
             logger.error(error);
 
             res.status(500).json({
                 error: handleErrorMessage({
                     error,
                     defaultMessage: "Error inesperado al obtener ruta.",
+                }),
+                fullError: error,
+            });
+        }
+    }
+
+    static async updateStatusRoute(
+        req: Request<{}, {}, IRouteUpdateStatus>,
+        res: Response
+    ) {
+        const { _id, status } = req.body;
+        try {
+            const route = await RouteService.getById(_id);
+
+            if (!route) throw Error("La ruta no existe");
+
+            const updated = await RouteService.updateStatus({
+                _id: route._id,
+                status,
+            });
+
+            res.status(200).json(updated);
+
+            return;
+        } catch (error) {
+            logger.debug(`Error updating route: ${req.originalUrl}`);
+            logger.error(error);
+
+            res.status(500).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Error inesperado al actualizar estatus de ruta.",
                 }),
                 fullError: error,
             });

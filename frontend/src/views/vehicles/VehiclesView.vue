@@ -18,7 +18,6 @@
                 <v-list-group
                     v-for="item in vehicles"
                     :key="item._id"
-                    v-model:open="openGroup"
                     :value="item.plate"
                 >
                     <template v-slot:activator="{ props }">
@@ -153,6 +152,16 @@
                         </p>
                     </div>
                     <template v-if="isActiveModal">
+                        <v-autocomplete
+                            v-if="blockMapFunctions"
+                            :items="statusOptions"
+                            v-model="newStatusRoute"
+                            item-title="name"
+                            item-value="id"
+                            label="Estado"
+                            variant="outlined"
+                            :return-object="true"
+                        />
                         <div class="leaflet-map">
                             <l-map
                                 ref="mapRef"
@@ -167,13 +176,13 @@
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     layer-type="base"
                                     name="Stadia Maps Basemap"
-                                ></l-tile-layer>
+                                />
 
                                 <!-- marcadores -->
                                 <l-marker
                                     v-if="fromMarker"
                                     :lat-lng="fromMarker"
-                                    :draggable="true"
+                                    :draggable="!blockMapFunctions"
                                     @dragstart="disableMapDragging"
                                     @dragend="enableMapDragging"
                                     @moveend="onFromMarkerMoved"
@@ -182,7 +191,7 @@
                                 <l-marker
                                     v-if="toMarker"
                                     :lat-lng="toMarker"
-                                    :draggable="true"
+                                    :draggable="!blockMapFunctions"
                                     @dragstart="disableMapDragging"
                                     @dragend="enableMapDragging"
                                     @moveend="onToMarkerMoved"
@@ -203,9 +212,16 @@
                     <v-spacer></v-spacer>
                     <div class="py-5">
                         <v-btn @click="closeMap">Cancelar</v-btn>
-                        <v-btn @click="createRoute" color="green"
-                            >Crear Ruta</v-btn
+                        <v-btn
+                            v-if="!blockMapFunctions"
+                            @click="createRoute"
+                            color="green"
                         >
+                            Crear Ruta
+                        </v-btn>
+                        <v-btn v-else @click="updateRoute" color="green">
+                            Actualizar Estado
+                        </v-btn>
                     </div>
                 </v-card-actions>
             </v-card>
@@ -228,6 +244,32 @@ import type { Location } from "../../types/location";
 import { showToast } from "../../utils/swalToast";
 import { STATUSES } from "../../constants/routes";
 import axios from "axios";
+
+const vehicleStore = useVehicleStore();
+const route = useRoute();
+const message = route.query.msg;
+const vehicles = ref<Vehicle[]>([]);
+const isActiveModal = ref<boolean>(false);
+const zoom = ref(17);
+const center = ref<[number, number]>([51.505, -0.09]);
+const clickCount = ref(0);
+const fromMarker = ref<[number, number] | null>(null);
+const toMarker = ref<[number, number] | null>(null);
+const routeStore = useRouteStore();
+const routeControl = ref<any>(null);
+const fromLatLng = ref<L.LatLng | null>(null);
+const toLatLng = ref<L.LatLng | null>(null);
+const activeVehicle = ref<string | null>(null);
+const origen = ref<string>("");
+const destino = ref<string>("");
+const blockMapFunctions = ref(false);
+const newStatusRoute = ref<{ id: number; name: string } | null>(null);
+
+const statusOptions: { id: number; name: string }[] = [
+    { id: 1, name: "Finalizado" },
+    { id: 2, name: "Cancelado" },
+    { id: 2, name: "Cancelado por el Usuario" },
+];
 
 function getMenuItems(vehicle: Vehicle) {
     return [
@@ -255,25 +297,6 @@ function getMenuItems(vehicle: Vehicle) {
         },
     ];
 }
-
-const openGroup = ref<string | null>(null); // Cambia a null para que no haya grupos abiertos inicialmente
-const vehicleStore = useVehicleStore();
-const route = useRoute();
-const message = route.query.msg;
-const vehicles = ref<Vehicle[]>([]);
-const isActiveModal = ref<boolean>(false);
-const zoom = ref(17);
-const center = ref<[number, number]>([51.505, -0.09]);
-const clickCount = ref(0);
-const fromMarker = ref<[number, number] | null>(null);
-const toMarker = ref<[number, number] | null>(null);
-const routeStore = useRouteStore();
-const routeControl = ref<any>(null);
-const fromLatLng = ref<L.LatLng | null>(null);
-const toLatLng = ref<L.LatLng | null>(null);
-const activeVehicle = ref<string | null>(null);
-const origen = ref<string>("");
-const destino = ref<string>("");
 
 const getStatus = ({ lastRoute }: Vehicle) => {
     if (lastRoute?.status === STATUSES.ACTIVE) {
@@ -307,8 +330,10 @@ async function getVehicles() {
 }
 
 async function openModal(vehicle: Vehicle) {
+    newStatusRoute.value = null;
     const { lastRoute } = vehicle;
-    if (lastRoute) {
+    if (lastRoute && lastRoute.status === STATUSES.ACTIVE) {
+        blockMapFunctions.value = true;
         const fromLatLngTuple: [number, number] = [
             lastRoute.from.lat,
             lastRoute.from.lon,
@@ -330,6 +355,9 @@ async function openModal(vehicle: Vehicle) {
         await setAddress(origen, lastRoute.from.lat, lastRoute.from.lon);
         await setAddress(destino, lastRoute.to.lat, lastRoute.to.lon);
     } else {
+        zoom.value = 17;
+        getCurrentLocation();
+        blockMapFunctions.value = false;
         setTimeout(() => {
             cleanMap();
         }, 100);
@@ -474,9 +502,6 @@ async function createRoute() {
         cancelButtonColor: "#BDBDBD",
         confirmButtonText: "Aceptar",
         cancelButtonText: "Cancelar",
-        customClass: {
-            popup: "my-swal-popup",
-        },
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
@@ -492,13 +517,7 @@ async function createRoute() {
                 );
 
                 if (vehicle) {
-                    vehicle.lastRoute = {
-                        _id: route._id,
-                        from: route.from,
-                        to: route.to,
-                        status: route.status,
-                        vehicle_id: route.vehicle_id,
-                    };
+                    vehicle.lastRoute = route;
                 }
 
                 activeVehicle.value = null;
@@ -517,6 +536,52 @@ async function createRoute() {
 async function setAddress(refToUpdate: Ref<string>, lat: number, lon: number) {
     const address = await getAddressFromLatLng(lat, lon);
     refToUpdate.value = address;
+}
+
+async function updateRoute() {
+    const vehicleId = activeVehicle.value;
+    const vehicle = vehicles.value.find((v) => v._id === activeVehicle.value);
+    const routeId = vehicle?.lastRoute?._id;
+    const routeNewStatusData = newStatusRoute.value;
+    if (!vehicleId || !vehicle || !routeId || !routeNewStatusData) return;
+
+    isActiveModal.value = false;
+
+    Swal.fire({
+        title: "¿Seguro que desea cambiar el estado?",
+        text: "Verifique que los datos antes de hacer el cambio.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#4CAF50",
+        cancelButtonColor: "#BDBDBD",
+        confirmButtonText: "Aceptar",
+        cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const route = await routeStore.updateStatusRoute({
+                    id: routeId,
+                    status: routeNewStatusData.id,
+                });
+
+                console.log(route);
+
+                if (vehicle) {
+                    vehicle.lastRoute = route;
+                }
+
+                activeVehicle.value = null;
+                newStatusRoute.value = null;
+            } catch (err) {
+                showToast({
+                    message: routeStore.error || "Error Actualizando el estado",
+                    icon: "error",
+                });
+            }
+        } else {
+            isActiveModal.value = true;
+        }
+    });
 }
 
 onMounted(() => {

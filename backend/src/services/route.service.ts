@@ -24,4 +24,26 @@ export default class RouteService {
 
         return route.toObject();
     }
+
+    static async getById(_id: Types.ObjectId) {
+        const route = await Route.findOne({ _id });
+
+        return route;
+    }
+
+    static async updateStatus({
+        _id,
+        status,
+    }: {
+        _id: Types.ObjectId;
+        status: number;
+    }) {
+        const updatedRoute = await Route.findByIdAndUpdate(
+            _id,
+            { status },
+            { new: true }
+        );
+
+        return updatedRoute;
+    }
 }
