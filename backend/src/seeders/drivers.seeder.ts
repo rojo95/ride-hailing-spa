@@ -72,24 +72,30 @@ const seedVehiclesAndDrivers = async () => {
                 capacity: 4,
                 driver_id: insertedDrivers[0]._id,
                 status_id: false,
+                picture:
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/2018_Toyota_Corolla_%28MZEA12R%29_Ascent_Sport_hatchback_%282018-11-02%29_01.jpg/960px-2018_Toyota_Corolla_%28MZEA12R%29_Ascent_Sport_hatchback_%282018-11-02%29_01.jpg",
             },
             {
                 plate: "DEF456",
                 model_id: vehicleModelMap.get("Civic")?._id,
                 year: new Date(2020, 0),
-                color: "Negro",
+                color: "Rojo",
                 capacity: 4,
                 driver_id: insertedDrivers[1]._id,
                 status_id: true,
+                picture:
+                    "https://mma.prnewswire.com/media/963411/2020_Honda_Civic_Si_Coupe.jpg?p=facebook",
             },
             {
                 plate: "GHI789",
                 model_id: vehicleModelMap.get("Focus")?._id,
                 year: new Date(2019, 0),
-                color: "Rojo",
+                color: "Azul",
                 capacity: 5,
                 driver_id: insertedDrivers[2]._id,
                 status_id: true,
+                picture:
+                    "https://5659238.fs1.hubspotusercontent-na1.net/hubfs/5659238/ford%202019.webp",
             },
         ];
 

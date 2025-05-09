@@ -5,14 +5,15 @@ import Route from "../models/route.model";
 
 export default class VehicleService {
     static async getAllVehicles() {
-        const users = await Vehicle.find({})
+        const vehicles = await Vehicle.find({})
             .populate({
                 path: "model_id",
                 populate: { path: "brand_id" },
             })
-            .populate("driver_id");
+            .populate("driver_id")
+            .sort({ createdAt: -1 });
 
-        return users;
+        return vehicles;
     }
 
     static async create({
@@ -48,9 +49,23 @@ export default class VehicleService {
     static async vehicleById(
         _id: Types.ObjectId
     ): Promise<IVehicle | undefined> {
-        const vehicle = await Vehicle.findOne({ _id });
+        const vehicle = await Vehicle.findOne({ _id })
+            .populate({
+                path: "model_id",
+                populate: { path: "brand_id" },
+            })
+            .populate("driver_id");
 
-        return vehicle?.toObject();
+        if (!vehicle) return;
+
+        const routes = await Route.find({ vehicle_id: _id }).sort({
+            createdAt: -1,
+        });
+
+        const vehicleWithRoutes: IVehicle = vehicle.toObject();
+        vehicleWithRoutes.routes = routes;
+
+        return vehicleWithRoutes;
     }
 
     static async getAllVehiclesWithLastRoute() {
@@ -59,7 +74,8 @@ export default class VehicleService {
                 path: "model_id",
                 populate: { path: "brand_id" },
             })
-            .populate("driver_id");
+            .populate("driver_id")
+            .sort({ createdAt: -1 });
 
         const results = await Promise.all(
             vehicles.map(async (vehicle) => {

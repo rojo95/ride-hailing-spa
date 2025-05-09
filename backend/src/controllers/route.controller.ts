@@ -4,8 +4,10 @@ import { Request, Response } from "express";
 import logger from "../utils/logger";
 import { handleErrorMessage } from "../utils/handleErrorMessage";
 import VehicleService from "../services/vehicles.service";
-import { IRoute, IRouteBase, IRouteUpdateStatus } from "../models/route.model";
+import { IRouteBase, IRouteUpdateStatus } from "../models/route.model";
 import { STATUSES } from "../constants/routes";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { jwtConfig } from "../config/jwt.config";
 
 export default class RouteController {
     static async getLastRouteByVehicleId(
@@ -38,9 +40,21 @@ export default class RouteController {
     }
 
     static async createRoute(req: Request<{}, {}, IRouteBase>, res: Response) {
-        const { from, to, status, vehicle_id } = req.body;
+        const { from, to, status, from_address, to_address, vehicle_id } =
+            req.body;
 
         try {
+            const token = req.header("Authorization")?.replace("Bearer ", "");
+            if (!req.user || !token) throw new Error("Sesión no iniciada");
+
+            const decoded = jwt.verify(token, jwtConfig.secret);
+
+            if (typeof decoded !== "object" || !("id" in decoded)) {
+                throw new Error("Token inválido");
+            }
+
+            if (decoded) logger.debug(decoded.id);
+
             const vehicle = await VehicleService.vehicleById(vehicle_id);
             if (!vehicle) throw Error("Vehículo no encontrado");
 
@@ -57,8 +71,11 @@ export default class RouteController {
             const route = await RouteService.create({
                 from,
                 to,
+                from_address,
+                to_address,
                 status,
                 vehicle_id,
+                createdBy: decoded.id,
             });
             res.status(200).json(route);
         } catch (error) {

@@ -110,3 +110,32 @@ export const validateRegisterVehicleDriver = (
     }
     next();
 };
+
+export const validateVehicleIdParam = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): void => {
+    const schema = Joi.object({
+        id: Joi.any()
+            .required()
+            .custom((value, helpers) => {
+                const filtered = isValidObjectId(value);
+                return !filtered ? helpers.error("any.objectId") : value;
+            })
+            .messages({
+                "any.invalid": "El ID del vehículo no es válido",
+                "any.empty": "El ID no puede estar vacío",
+                "any.required": "El ID del vehículo es obligatorio",
+            }),
+    });
+
+    const { error } = schema.validate(req.params);
+
+    if (error) {
+        res.status(400).json({ error: error.details[0].message });
+        return;
+    }
+
+    next();
+};

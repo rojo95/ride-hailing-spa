@@ -48,7 +48,7 @@ export const useAuthStore = defineStore("auth", () => {
             role.value = user.role;
             localStorage.setItem("token", token.value);
             localStorage.setItem("role", role.value);
-            router.push("/dashboard");
+            router.push("/vehicles");
             return null; // Indica que no hubo error
         } catch (err) {
             setError(handleAxiosError(err));

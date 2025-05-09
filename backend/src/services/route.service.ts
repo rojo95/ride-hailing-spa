@@ -10,12 +10,21 @@ export default class RouteService {
         return route;
     }
 
-    static async create({ from, to, status, vehicle_id }: IRouteBase) {
-        // const existingRoute = await Route.findOne({ vehicle_id });
-
+    static async create({
+        from,
+        to,
+        status,
+        vehicle_id,
+        from_address,
+        to_address,
+        createdBy,
+    }: IRouteBase) {
         const route = new Route({
             from,
             to,
+            from_address,
+            to_address,
+            createdBy,
             status,
             vehicle_id,
         });

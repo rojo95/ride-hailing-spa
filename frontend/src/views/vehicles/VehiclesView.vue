@@ -26,7 +26,10 @@
                             <v-list-item-title class="font-weight-bold">
                                 Vehículo: {{ item.plate }}
                             </v-list-item-title>
-                            <div class="d-flex justify-space-between">
+                            <div
+                                class="d-flex justify-space-between"
+                                v-if="item.driver_id"
+                            >
                                 <v-list-item-content
                                     class="d-flex align-sm-center"
                                 >
@@ -121,9 +124,9 @@
         </v-card>
     </div>
 
-    <v-alert v-if="message" type="success" class="mt-4 toast-message">{{
+    <!-- <v-alert v-if="message" type="success" class="mt-4 toast-message">{{
         message
-    }}</v-alert>
+    }}</v-alert> -->
 
     <v-dialog v-model="isActiveModal" max-width="800">
         <template v-slot:default>
@@ -246,6 +249,7 @@ import { showToast } from "../../utils/swalToast";
 import { STATUSES } from "../../constants/routes";
 import axios from "axios";
 import FullScreenOverlay from "../../components/FullScreenOverlay.vue";
+import router from "../../router";
 
 const vehicleStore = useVehicleStore();
 const route = useRoute();
@@ -277,15 +281,21 @@ const statusOptions: { id: number; name: string }[] = [
 
 function getMenuItems(vehicle: Vehicle) {
     return [
-        {
-            title: "Gestionar Ruta",
-            action: () => openModal(vehicle),
-        },
+        ...(vehicle.status_id
+            ? [
+                  {
+                      title: "Gestionar Ruta",
+                      action: () => openModal(vehicle),
+                  },
+              ]
+            : []),
         {
             title: "Ver Más",
-            action: () => {
-                console.log("Ver Más de:", vehicle._id);
-            },
+            action: () =>
+                router.push({
+                    name: "vehicles-details",
+                    params: { id: vehicle._id },
+                }),
         },
         {
             title: "Editar",
@@ -302,11 +312,14 @@ function getMenuItems(vehicle: Vehicle) {
     ];
 }
 
-const getStatus = ({ lastRoute }: Vehicle) => {
-    if (lastRoute?.status === STATUSES.ACTIVE) {
-        return { description: "Ocupado", color: "bg-red" };
+const getStatus = ({ lastRoute, status_id }: Vehicle) => {
+    if (!status_id) {
+        return { description: "En Mantenimiento", color: "bg-grey" };
     }
-    return { description: "Libre", color: "bg-green" };
+    if (lastRoute?.status === STATUSES.ACTIVE) {
+        return { description: "En Servicio", color: "bg-red" };
+    }
+    return { description: "Disponible", color: "bg-green" };
 };
 
 async function getAddressFromLatLng(lat: number, lon: number): Promise<string> {
@@ -353,6 +366,9 @@ async function openModal(vehicle: Vehicle) {
             lastRoute.to.lon,
         ];
 
+        origen.value = lastRoute?.from_address;
+        destino.value = lastRoute?.to_address;
+
         fromMarker.value = fromLatLngTuple;
         toMarker.value = toLatLngTuple;
 
@@ -361,9 +377,6 @@ async function openModal(vehicle: Vehicle) {
         center.value = [midLat, midLon];
 
         zoom.value = 13;
-
-        await setAddress(origen, lastRoute.from.lat, lastRoute.from.lon);
-        await setAddress(destino, lastRoute.to.lat, lastRoute.to.lon);
     } else {
         zoom.value = 17;
         getCurrentLocation();
@@ -488,7 +501,13 @@ function onToMarkerMoved(e: L.LeafletEvent) {
 }
 
 async function createRoute() {
-    if (!activeVehicle?.value || !fromLatLng.value || !toLatLng.value) return;
+    if (
+        !activeVehicle?.value ||
+        !fromLatLng.value ||
+        !toLatLng.value ||
+        !origen
+    )
+        return;
 
     const vehicleId = activeVehicle?.value;
 
@@ -520,6 +539,8 @@ async function createRoute() {
                     const route = await routeStore.createRoute({
                         from,
                         to,
+                        from_address: origen.value,
+                        to_address: destino.value,
                         status: STATUSES.ACTIVE,
                         vehicle_id: vehicleId,
                     });
@@ -605,6 +626,10 @@ async function updateRoute() {
 onMounted(() => {
     getVehicles();
     getCurrentLocation();
+
+    if (typeof message === "string") {
+        showToast({ message, icon: "success" });
+    }
 });
 </script>
 

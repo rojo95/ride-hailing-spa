@@ -30,6 +30,14 @@ export const validateCreateRoute = (
         to: locationSchema.required().messages({
             "any.required": "El destino es obligatorio",
         }),
+        from_address: Joi.string().required().messages({
+            "string.base": "La dirección de origen debe ser un texto",
+            "any.required": "La dirección de origen es obligatoria",
+        }),
+        to_address: Joi.string().required().messages({
+            "string.base": "La dirección de destino debe ser un texto",
+            "any.required": "La dirección de destino es obligatoria",
+        }),
         status: Joi.number().required().valid(0, 1, 2, 3).messages({
             "number.base": "El estado debe ser un número",
             "any.required": "El estado es obligatorio",

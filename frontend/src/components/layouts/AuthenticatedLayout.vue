@@ -61,7 +61,6 @@ const role = ref(localStorage.getItem("role"));
 const drawer = ref(false);
 
 const links = [
-    { title: "Dashboard", to: "/dashboard" },
     { title: "Vehículos", to: "/vehicles" },
     ...(role.value === "admin" ? [{ title: "Usuarios", to: "/users" }] : []),
 ];

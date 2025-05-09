@@ -306,6 +306,7 @@ import type { CarBrandResponse } from "../../types/carBrand";
 import type { VehicleForm } from "../../types/vehicle";
 import router from "../../router";
 import Swal from "sweetalert2";
+import { showToast } from "../../utils/swalToast";
 
 const vehicleStore = useVehicleStore();
 const error = ref("");
@@ -472,6 +473,7 @@ async function getCarBrands() {
 
         carBrands.value = data;
     } catch (error) {
+        showToast({ message: vehicleStore.error, icon: "error" });
         console.error("Error al obtener usuarios:", error);
     }
 }

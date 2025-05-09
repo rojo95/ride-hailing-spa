@@ -70,9 +70,6 @@
                     </v-card-text>
                 </v-card>
             </template>
-            <v-alert v-if="error" type="error" class="my-4 mx-6">{{
-                error
-            }}</v-alert>
         </v-stepper>
     </div>
 </template>
@@ -82,13 +79,11 @@ import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import router from "../router";
 import { email, inputRequired, password } from "../constants/formRules";
-
-const error = ref("");
+import { showToast } from "../utils/swalToast";
 
 const auth = useAuthStore();
-
+const error = ref("");
 const step = ref(1);
-
 const form = ref({
     email: "",
     secretQuestion: "",
@@ -103,12 +98,12 @@ const formRules = {
 };
 
 const fetchSecretQuestion = async () => {
-    error.value = "";
     try {
         const question = await auth.getSecretQuestion(form.value);
         if (!question) {
             error.value =
                 "Error al obtener la pregunta secreta. Por favor, verifica tu correo.";
+            showToast({ message: error.value, icon: "error" });
             return;
         }
 
@@ -117,6 +112,7 @@ const fetchSecretQuestion = async () => {
     } catch (err) {
         console.error("Error obteniendo la pregunta secreta", err);
         error.value = "Error al obtener la pregunta secreta.";
+        showToast({ message: error.value, icon: "error" });
     }
 };
 
@@ -133,9 +129,11 @@ const submitSecretAnswer = async () => {
 
         error.value =
             "Error al modificar la contraseña, verifica tu respuesta.";
+        showToast({ message: error.value, icon: "error" });
     } catch (err) {
         console.error("Respuesta incorrecta o error en la verificación", err);
         error.value = auth.error || "Error al modificar la contraseña.";
+        showToast({ message: error.value, icon: "error" });
     }
 };
 </script>

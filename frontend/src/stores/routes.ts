@@ -16,6 +16,8 @@ export const useRouteStore = defineStore("routes", () => {
     const createRoute = async ({
         from,
         to,
+        from_address,
+        to_address,
         status,
         vehicle_id,
     }: RouteBase): Promise<Route> => {
@@ -25,7 +27,14 @@ export const useRouteStore = defineStore("routes", () => {
             const route = await fetchWithAuthToken<Route>({
                 url: "routes/",
                 method: "POST",
-                data: { from, to, status, vehicle_id },
+                data: {
+                    from,
+                    to,
+                    status,
+                    vehicle_id,
+                    from_address,
+                    to_address,
+                },
             });
 
             return route;

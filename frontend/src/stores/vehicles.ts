@@ -100,7 +100,7 @@ export const useVehicleStore = defineStore("vehicles", () => {
                         ...driver,
                         plate: vehicle.plate,
                         model_id: vehicle.model_id,
-                        year: vehicle.year,
+                        year: new Date(vehicle.year, 0),
                         color: vehicle.color,
                         capacity: vehicle.capacity,
                         avatar: urlBase + avatarFile?.url,
@@ -116,6 +116,25 @@ export const useVehicleStore = defineStore("vehicles", () => {
         }
     };
 
+    async function getVehicleById(_id: string) {
+        clearError();
+        try {
+            const response = await fetchWithAuthToken<Vehicle>({
+                url: "vehicles/" + _id,
+                method: "GET",
+            });
+
+            return response;
+        } catch (err) {
+            setError(
+                handleAxiosError(err) ||
+                    "Error al obtener los datos del vehículo"
+            );
+            console.error(`${error.value}: "`, err);
+            throw error.value;
+        }
+    }
+
     return {
         error,
         vehicles,
@@ -123,5 +142,6 @@ export const useVehicleStore = defineStore("vehicles", () => {
         carBrands,
         fetchCarBrand,
         createVehicle,
+        getVehicleById,
     };
 });

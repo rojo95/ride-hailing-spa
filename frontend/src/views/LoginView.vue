@@ -44,8 +44,6 @@
             </div>
         </v-form>
 
-        <v-alert v-if="error" type="error" class="mt-4">{{ error }}</v-alert>
-
         <v-alert v-if="message" type="success" class="mt-4">{{
             message
         }}</v-alert>
@@ -53,17 +51,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useRoute } from "vue-router";
 import { email, password } from "../constants/formRules";
+import { showToast } from "../utils/swalToast";
 
 const auth = useAuthStore();
 const route = useRoute();
 const message = route.query.msg;
 const valid = ref<boolean>(false);
 const loading = ref<boolean>(false);
-const error = ref<string>("");
 const showPass = ref<boolean>(false);
 
 const formRules = {
@@ -72,15 +70,10 @@ const formRules = {
 };
 
 const handleLogin = async () => {
-    // Limpiar el error antes de intentar iniciar sesión
-    error.value = "";
-
-    // Intentar iniciar sesión y capturar el error
     const loginError = await auth.login(form.value);
 
-    // Si hay un error, asignarlo a error.value
     if (loginError) {
-        error.value = auth.error;
+        showToast({ message: auth.error, icon: "error" });
     }
 };
 
@@ -91,5 +84,11 @@ function handleShowPass() {
 const form = ref({
     email: "",
     password: "",
+});
+
+onMounted(() => {
+    if (message && typeof message === "string") {
+        showToast({ message, icon: "success" });
+    }
 });
 </script>

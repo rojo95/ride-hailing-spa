@@ -61,8 +61,6 @@
                 Registrar
             </v-btn>
         </v-form>
-
-        <v-alert v-if="error" type="error" class="mt-4">{{ error }}</v-alert>
     </v-card>
 </template>
 
@@ -70,9 +68,9 @@
 import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { email, password } from "../constants/formRules";
+import { showToast } from "../utils/swalToast";
 
 const auth = useAuthStore();
-const error = ref<string>("");
 const valid = ref<boolean>(false);
 const showPass = ref<boolean>(false);
 const loading = ref<boolean>(false);
@@ -82,14 +80,13 @@ function handleShowPass() {
 }
 
 const handleForm = async () => {
-    // Limpiar el error antes de intentar iniciar sesión
-    error.value = "";
-
     try {
-        // Intentar iniciar sesión y capturar el error
         await auth.registerUser(form.value);
     } catch (err) {
-        error.value = auth.error || "Error al registrar usuario.";
+        showToast({
+            message: auth.error || "Error al registrar usuario.",
+            icon: "error",
+        });
     }
 };
 

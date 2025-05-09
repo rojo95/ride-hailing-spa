@@ -14,13 +14,18 @@ export interface IDriver extends Document {
 interface IDriverDocument extends IDriver, Document {}
 
 // Esquema de Mongoose
-const DriverSchema = new Schema<IDriverDocument>({
-    idCard: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    lastname: { type: String, required: true },
-    avatar: { type: String, required: true },
-    licenseExpiry: { type: Date, required: true },
-});
+const DriverSchema = new Schema<IDriverDocument>(
+    {
+        idCard: { type: String, required: true, unique: true },
+        name: { type: String, required: true },
+        lastname: { type: String, required: true },
+        avatar: { type: String, required: true },
+        licenseExpiry: { type: Date, required: true },
+    },
+    {
+        timestamps: true,
+    }
+);
 
 // Exportar el modelo
 const Driver = model<IDriverDocument>("Driver", DriverSchema);

@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
 
 import LoginView from "../views/LoginView.vue";
-import DashboardView from "../views/DashboardView.vue";
 import AuthenticatedLayout from "../components/layouts/AuthenticatedLayout.vue";
 import UsersView from "../views/UsersView.vue";
 import ForgotPasswordView from "../views/ForgotPasswordView.vue";
@@ -11,6 +10,7 @@ import GuestLayout from "../components/layouts/GuestLayout.vue";
 import RegisterView from "../views/RegisterView.vue";
 import VehiclesView from "../views/vehicles/VehiclesView.vue";
 import CreateVehiclesView from "../views/vehicles/CreateVehiclesView.vue";
+import VehicleDetailsView from "../views/vehicles/VehicleDetailsView.vue";
 
 const routes: RouteRecordRaw[] = [
     {
@@ -32,7 +32,6 @@ const routes: RouteRecordRaw[] = [
         component: AuthenticatedLayout,
         meta: { requiresAuth: true },
         children: [
-            { path: "dashboard", name: "dashboard", component: DashboardView },
             {
                 path: "users",
                 name: "users",
@@ -49,6 +48,11 @@ const routes: RouteRecordRaw[] = [
                 path: "/vehicles/create",
                 name: "vehicles-create",
                 component: CreateVehiclesView,
+            },
+            {
+                path: "/vehicles/:id",
+                name: "vehicles-details",
+                component: VehicleDetailsView,
             },
         ],
     },
@@ -70,11 +74,11 @@ router.beforeEach((to, _from, next) => {
     }
 
     if (to.meta.requiresAdmin && role !== "admin") {
-        return next("/dashboard");
+        return next("/vehicles");
     }
 
     if (to.path === "/login" && token) {
-        return next("/dashboard");
+        return next("/vehicles");
     }
 
     next();

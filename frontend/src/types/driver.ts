@@ -11,6 +11,7 @@ interface DriverBase {
 export interface Driver extends DriverBase {
     _id: string;
     avatar: string;
+    createdAt: string;
 }
 
 // Driver usado en el formulario (editable, incluye File)

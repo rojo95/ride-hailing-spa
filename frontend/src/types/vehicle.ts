@@ -13,6 +13,7 @@ export interface Vehicle {
     status_id: number;
     picture: string;
     lastRoute?: Route;
+    routes?: Route[];
 }
 
 export interface VehicleForm {

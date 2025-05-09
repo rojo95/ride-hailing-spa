@@ -1,6 +1,7 @@
 import { Schema, Document, model, Types } from "mongoose";
 import CarModel from "./carModel.model";
 import Driver from "./driver.model";
+import { IRoute } from "./route.model";
 
 export interface IVehicle extends Document {
     _id: Types.ObjectId;
@@ -11,6 +12,8 @@ export interface IVehicle extends Document {
     capacity: number;
     driver_id: Types.ObjectId;
     status_id: boolean;
+    picture: string;
+    routes?: IRoute[];
 }
 
 const vehicleSchema = new Schema<IVehicle>(
@@ -30,6 +33,7 @@ const vehicleSchema = new Schema<IVehicle>(
             ref: Driver,
         },
         status_id: { type: Boolean, default: true },
+        picture: { type: String, required: true },
     },
     {
         timestamps: true,

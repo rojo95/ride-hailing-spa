@@ -28,6 +28,26 @@ export default class VehicleController {
         }
     }
 
+    static async byId(req: Request<{ id: string }>, res: Response) {
+        const { id } = req.params;
+
+        const vehId = new Types.ObjectId(id);
+
+        try {
+            const vehicles = await VehicleService.vehicleById(vehId);
+
+            res.status(200).json(vehicles);
+        } catch (error) {
+            res.status(500).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage: "Error inesperado al obtener vehículos",
+                }),
+                fullError: error,
+            });
+        }
+    }
+
     static async create(
         req: Request<{}, {}, RegisterVehicleDriverRequest>,
         res: Response
