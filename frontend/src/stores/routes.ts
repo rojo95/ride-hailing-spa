@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import type { RouteBase } from "../types/route";
+import type { Route, RouteBase } from "../types/route";
 import { fetchWithAuthToken, handleAxiosError } from "../utils/api";
 
 export const useRouteStore = defineStore("routes", () => {
@@ -14,12 +14,17 @@ export const useRouteStore = defineStore("routes", () => {
         error.value = "";
     };
 
-    const createRoute = async ({ from, to, status, vehicle_id }: RouteBase) => {
+    const createRoute = async ({
+        from,
+        to,
+        status,
+        vehicle_id,
+    }: RouteBase): Promise<Route> => {
         clearError();
         loading.value = true;
 
         try {
-            const route = await fetchWithAuthToken<RouteBase>({
+            const route = await fetchWithAuthToken<Route>({
                 url: "routes/",
                 method: "POST",
                 data: { from, to, status, vehicle_id },

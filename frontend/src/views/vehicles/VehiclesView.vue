@@ -160,6 +160,7 @@
                                 v-model:center="center"
                                 :useGlobalLeaflet="false"
                                 @click="onMapClick"
+                                v-if="isActiveModal"
                             >
                                 <!-- capa base -->
                                 <l-tile-layer
@@ -213,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from "vue";
+import { nextTick, onMounted, ref, watch, type Ref } from "vue";
 import type { Vehicle } from "../../types/vehicle";
 import { useVehicleStore } from "../../stores/vehicles";
 import { useRoute } from "vue-router";
@@ -232,7 +233,7 @@ function getMenuItems(vehicle: Vehicle) {
     return [
         {
             title: "Gestionar Ruta",
-            action: () => getLastRoute(vehicle._id),
+            action: () => openModal(vehicle),
         },
         {
             title: "Ver Más",
@@ -305,12 +306,37 @@ async function getVehicles() {
     }
 }
 
-async function getLastRoute(_id: string) {
-    activeVehicle.value = _id;
+async function openModal(vehicle: Vehicle) {
+    const { lastRoute } = vehicle;
+    if (lastRoute) {
+        const fromLatLngTuple: [number, number] = [
+            lastRoute.from.lat,
+            lastRoute.from.lon,
+        ];
+        const toLatLngTuple: [number, number] = [
+            lastRoute.to.lat,
+            lastRoute.to.lon,
+        ];
+
+        fromMarker.value = fromLatLngTuple;
+        toMarker.value = toLatLngTuple;
+
+        const midLat = (lastRoute.from.lat + lastRoute.to.lat) / 2;
+        const midLon = (lastRoute.from.lon + lastRoute.to.lon) / 2;
+        center.value = [midLat, midLon];
+
+        zoom.value = 13;
+
+        await setAddress(origen, lastRoute.from.lat, lastRoute.from.lon);
+        await setAddress(destino, lastRoute.to.lat, lastRoute.to.lon);
+    } else {
+        setTimeout(() => {
+            cleanMap();
+        }, 100);
+    }
+
+    activeVehicle.value = vehicle._id;
     isActiveModal.value = true;
-    setTimeout(() => {
-        cleanMap();
-    }, 100);
 }
 
 const mapRef = ref();
@@ -377,25 +403,19 @@ function getCurrentLocation() {
     }
 }
 
-function onMapClick(e: L.LeafletMouseEvent) {
+async function onMapClick(e: L.LeafletMouseEvent) {
     const { latlng } = e;
 
     if (clickCount.value === 0) {
         fromMarker.value = [latlng.lat, latlng.lng];
         fromLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 1;
-        getAddressFromLatLng(latlng.lat, latlng.lng).then((address) => {
-            // Actualiza la dirección de Origen
-            origen.value = address;
-        });
+        await setAddress(origen, latlng.lat, latlng.lng);
     } else {
         toMarker.value = [latlng.lat, latlng.lng];
         toLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 0;
-        getAddressFromLatLng(latlng.lat, latlng.lng).then((address) => {
-            // Actualiza la dirección de Destino
-            destino.value = address;
-        });
+        await setAddress(destino, latlng.lat, latlng.lng);
         drawRoute();
     }
 }
@@ -432,7 +452,7 @@ function onToMarkerMoved(e: L.LeafletEvent) {
 async function createRoute() {
     if (!activeVehicle?.value || !fromLatLng.value || !toLatLng.value) return;
 
-    const vehicle = activeVehicle?.value;
+    const vehicleId = activeVehicle?.value;
 
     const from: Location = {
         lat: fromLatLng.value?.lat,
@@ -460,12 +480,26 @@ async function createRoute() {
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                await routeStore.createRoute({
+                const route = await routeStore.createRoute({
                     from,
                     to,
                     status: STATUSES.ACTIVE,
-                    vehicle_id: vehicle,
+                    vehicle_id: vehicleId,
                 });
+
+                const vehicle = vehicles.value.find(
+                    (v) => v._id === activeVehicle.value
+                );
+
+                if (vehicle) {
+                    vehicle.lastRoute = {
+                        _id: route._id,
+                        from: route.from,
+                        to: route.to,
+                        status: route.status,
+                        vehicle_id: route.vehicle_id,
+                    };
+                }
 
                 activeVehicle.value = null;
             } catch (err) {
@@ -478,6 +512,11 @@ async function createRoute() {
             isActiveModal.value = true;
         }
     });
+}
+
+async function setAddress(refToUpdate: Ref<string>, lat: number, lon: number) {
+    const address = await getAddressFromLatLng(lat, lon);
+    refToUpdate.value = address;
 }
 
 onMounted(() => {
@@ -496,9 +535,5 @@ onMounted(() => {
 .leaflet-map {
     height: 300px;
     width: 100%;
-}
-
-.my-swal-popup {
-    z-index: 1000000000;
 }
 </style>
