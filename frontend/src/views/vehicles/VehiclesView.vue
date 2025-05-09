@@ -1,11 +1,5 @@
 <template>
     <FullScreenOverlay :modelValue="isLoading" />
-    <v-overlay
-        :model-value="isLoading"
-        persistent
-        class="align-center justify-center"
-    >
-    </v-overlay>
     <div class="pa-10">
         <v-card class="w-100" width="300">
             <v-card-title class="d-flex justify-space-between">
