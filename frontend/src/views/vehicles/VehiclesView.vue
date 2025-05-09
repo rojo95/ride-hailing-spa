@@ -1,4 +1,11 @@
 <template>
+    <FullScreenOverlay :modelValue="isLoading" />
+    <v-overlay
+        :model-value="isLoading"
+        persistent
+        class="align-center justify-center"
+    >
+    </v-overlay>
     <div class="pa-10">
         <v-card class="w-100" width="300">
             <v-card-title class="d-flex justify-space-between">
@@ -244,6 +251,7 @@ import type { Location } from "../../types/location";
 import { showToast } from "../../utils/swalToast";
 import { STATUSES } from "../../constants/routes";
 import axios from "axios";
+import FullScreenOverlay from "../../components/FullScreenOverlay.vue";
 
 const vehicleStore = useVehicleStore();
 const route = useRoute();
@@ -264,6 +272,8 @@ const origen = ref<string>("");
 const destino = ref<string>("");
 const blockMapFunctions = ref(false);
 const newStatusRoute = ref<{ id: number; name: string } | null>(null);
+const isLoading = ref(false);
+const mapRef = ref();
 
 const statusOptions: { id: number; name: string }[] = [
     { id: 1, name: "Finalizado" },
@@ -319,6 +329,8 @@ async function getAddressFromLatLng(lat: number, lon: number): Promise<string> {
 }
 
 async function getVehicles() {
+    isLoading.value = true;
+
     try {
         const data = await vehicleStore.fetchVehicles();
         if (!data) return;
@@ -326,10 +338,14 @@ async function getVehicles() {
         vehicles.value = data;
     } catch (error) {
         console.error("Error al obtener usuarios:", error);
+    } finally {
+        isLoading.value = false;
     }
 }
 
 async function openModal(vehicle: Vehicle) {
+    isLoading.value = true;
+
     newStatusRoute.value = null;
     const { lastRoute } = vehicle;
     if (lastRoute && lastRoute.status === STATUSES.ACTIVE) {
@@ -365,9 +381,9 @@ async function openModal(vehicle: Vehicle) {
 
     activeVehicle.value = vehicle._id;
     isActiveModal.value = true;
-}
 
-const mapRef = ref();
+    isLoading.value = false;
+}
 
 watch(isActiveModal, async (val) => {
     if (val) {
@@ -502,35 +518,39 @@ async function createRoute() {
         cancelButtonColor: "#BDBDBD",
         confirmButtonText: "Aceptar",
         cancelButtonText: "Cancelar",
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                const route = await routeStore.createRoute({
-                    from,
-                    to,
-                    status: STATUSES.ACTIVE,
-                    vehicle_id: vehicleId,
-                });
+    })
+        .then(async (result) => {
+            if (result.isConfirmed) {
+                isLoading.value = true;
+                try {
+                    const route = await routeStore.createRoute({
+                        from,
+                        to,
+                        status: STATUSES.ACTIVE,
+                        vehicle_id: vehicleId,
+                    });
 
-                const vehicle = vehicles.value.find(
-                    (v) => v._id === activeVehicle.value
-                );
+                    const vehicle = vehicles.value.find(
+                        (v) => v._id === activeVehicle.value
+                    );
 
-                if (vehicle) {
-                    vehicle.lastRoute = route;
+                    if (vehicle) {
+                        vehicle.lastRoute = route;
+                    }
+
+                    activeVehicle.value = null;
+                } catch (err) {
+                    showToast({
+                        message:
+                            routeStore.error || "Error al registrar vehículo.",
+                        icon: "error",
+                    });
                 }
-
-                activeVehicle.value = null;
-            } catch (err) {
-                showToast({
-                    message: routeStore.error || "Error al registrar vehículo.",
-                    icon: "error",
-                });
+            } else {
+                isActiveModal.value = true;
             }
-        } else {
-            isActiveModal.value = true;
-        }
-    });
+        })
+        .finally(() => (isLoading.value = false));
 }
 
 async function setAddress(refToUpdate: Ref<string>, lat: number, lon: number) {
@@ -556,32 +576,36 @@ async function updateRoute() {
         cancelButtonColor: "#BDBDBD",
         confirmButtonText: "Aceptar",
         cancelButtonText: "Cancelar",
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                const route = await routeStore.updateStatusRoute({
-                    id: routeId,
-                    status: routeNewStatusData.id,
-                });
+    })
+        .then(async (result) => {
+            if (result.isConfirmed) {
+                isLoading.value = true;
+                try {
+                    const route = await routeStore.updateStatusRoute({
+                        id: routeId,
+                        status: routeNewStatusData.id,
+                    });
 
-                console.log(route);
+                    console.log(route);
 
-                if (vehicle) {
-                    vehicle.lastRoute = route;
+                    if (vehicle) {
+                        vehicle.lastRoute = route;
+                    }
+
+                    activeVehicle.value = null;
+                    newStatusRoute.value = null;
+                } catch (err) {
+                    showToast({
+                        message:
+                            routeStore.error || "Error Actualizando el estado",
+                        icon: "error",
+                    });
                 }
-
-                activeVehicle.value = null;
-                newStatusRoute.value = null;
-            } catch (err) {
-                showToast({
-                    message: routeStore.error || "Error Actualizando el estado",
-                    icon: "error",
-                });
+            } else {
+                isActiveModal.value = true;
             }
-        } else {
-            isActiveModal.value = true;
-        }
-    });
+        })
+        .finally(() => (isLoading.value = false));
 }
 
 onMounted(() => {
