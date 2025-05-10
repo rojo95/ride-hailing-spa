@@ -10,7 +10,7 @@ export interface Vehicle {
     color: string;
     capacity: number;
     driver_id: Driver;
-    status_id: number;
+    status: number;
     picture: string;
     lastRoute?: Route;
     routes?: Route[];
@@ -24,4 +24,14 @@ export interface VehicleForm {
     color: string;
     capacity: number | null;
     picture: File | null;
+}
+
+export interface VehiclesResponse {
+    data: Vehicle[];
+    pagination: {
+        limit: number;
+        page: number;
+        total: number;
+        totalPages: number;
+    };
 }

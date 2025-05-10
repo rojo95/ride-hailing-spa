@@ -8,4 +8,5 @@ export interface RegisterVehicleRequest {
     capacity: number;
     picture: string;
     driver_id: Types.ObjectId;
+    createdBy: Types.ObjectId;
 }

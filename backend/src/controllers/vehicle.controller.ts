@@ -4,24 +4,42 @@ import VehicleService from "../services/vehicles.service";
 import DriverService from "../services/driver.service";
 import { RegisterVehicleRequest } from "../types/vehicle";
 import { RegisterDriverRequest } from "../types/driver";
-import logger from "../utils/logger";
 import path from "path";
 import FileService from "../services/file.service";
 import { Types } from "mongoose";
+import { decodeTokenFromRequest } from "../utils/decodeToken";
 
 type RegisterVehicleDriverRequest = RegisterDriverRequest &
     RegisterVehicleRequest;
 
 export default class VehicleController {
-    static async all(_: Request, res: Response): Promise<void> {
+    static async all(req: Request, res: Response): Promise<void> {
         try {
-            const vehicles = await VehicleService.getAllVehiclesWithLastRoute();
-            res.status(200).json(vehicles);
+            const page = parseInt(req.params.page as string) || 1;
+            const limit = parseInt(req.params.limit as string) || 10;
+            const offset = (page - 1) * limit;
+
+            const { vehicles, total } =
+                await VehicleService.getAllVehiclesWithLastRoute({
+                    limit,
+                    offset,
+                });
+
+            res.status(200).json({
+                data: vehicles,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                },
+            });
         } catch (error) {
             res.status(500).json({
                 error: handleErrorMessage({
                     error,
-                    defaultMessage: "Error inesperado al obtener vehículos",
+                    defaultMessage:
+                        "Error inesperado al obtener vehículos paginados",
                 }),
                 fullError: error,
             });
@@ -52,7 +70,6 @@ export default class VehicleController {
         req: Request<{}, {}, RegisterVehicleDriverRequest>,
         res: Response
     ) {
-        let driver = null;
         const {
             idCard,
             name,
@@ -70,12 +87,17 @@ export default class VehicleController {
         let driverId: Types.ObjectId | null = null;
 
         try {
+            const { id: authId } = decodeTokenFromRequest(req);
+
+            if (!authId) throw Error("No se ha obtenido id de usuario");
+
             const driver = await DriverService.create({
                 idCard,
                 name,
                 lastname,
                 licenseExpiry,
                 avatar,
+                createdBy: authId,
             });
 
             if (!driver._id) throw Error("Error al registrar al conductor");
@@ -90,6 +112,7 @@ export default class VehicleController {
                 capacity,
                 picture,
                 driver_id: driverId,
+                createdBy: authId,
             });
 
             res.status(200).json({ driver, vehicle });

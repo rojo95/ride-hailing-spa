@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 
 const basicUserProjection = { email: 1, role: 1 };
 const userWithSecretProjection = { email: 1, role: 1, secretQuestion: 1 };
@@ -9,7 +9,7 @@ export default class UserService {
         field: "email" | "_id",
         value: string,
         includeSecret = false
-    ) {
+    ): Promise<IUser> {
         if (field === "_id" && !mongoose.Types.ObjectId.isValid(value)) {
             throw new Error("ID inválido");
         }

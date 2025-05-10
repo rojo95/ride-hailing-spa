@@ -139,3 +139,34 @@ export const validateVehicleIdParam = (
 
     next();
 };
+
+export const validateVehiclePaginationParams = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): void => {
+    const schema = Joi.object({
+        page: Joi.number().integer().min(1).required().messages({
+            "number.base": "El número de página debe ser un número",
+            "number.integer": "La página debe ser un número entero",
+            "number.min": "La página debe ser al menos 1",
+            "any.required": "El parámetro de página es obligatorio",
+        }),
+        limit: Joi.number().integer().min(1).max(100).required().messages({
+            "number.base": "El límite debe ser un número",
+            "number.integer": "El límite debe ser un número entero",
+            "number.min": "El límite debe ser al menos 1",
+            "number.max": "El límite debe ser como máximo 100",
+            "any.required": "El parámetro de límite es obligatorio",
+        }),
+    });
+
+    const { error } = schema.validate(req.params);
+
+    if (error) {
+        res.status(400).json({ error: error.details[0].message });
+        return;
+    }
+
+    next();
+};

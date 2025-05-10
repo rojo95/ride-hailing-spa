@@ -1,149 +1,182 @@
 <template>
     <FullScreenOverlay :modelValue="isLoading" />
     <div class="pa-10">
-        <v-card class="w-100" width="300">
-            <v-card-title class="d-flex justify-space-between">
-                <p>Vehículos</p>
-                <router-link to="/vehicles/create">
-                    <v-btn
-                        color="green"
-                        variant="elevated"
-                        class="text-white rounded-lg"
-                    >
-                        <v-icon color="white">mdi-plus</v-icon>
-                    </v-btn>
-                </router-link>
-            </v-card-title>
-
-            <v-list>
-                <v-list-group
-                    v-for="item in vehicles"
-                    :key="item._id"
-                    :value="item.plate"
-                >
-                    <template v-slot:activator="{ props }">
-                        <v-list-item v-bind="props">
-                            <v-list-item-title class="font-weight-bold">
-                                Vehículo: {{ item.plate }}
-                            </v-list-item-title>
-                            <div
-                                class="d-flex justify-space-between"
-                                v-if="item.driver_id"
-                            >
-                                <v-list-item-content
-                                    class="d-flex align-sm-center"
+        <v-container>
+            <v-row justify="center">
+                <v-col cols="12" sm="10">
+                    <v-card class="w-100" width="300">
+                        <v-card-title class="d-flex justify-space-between">
+                            <p>Vehículos</p>
+                            <router-link to="/vehicles/create">
+                                <v-btn
+                                    color="green"
+                                    variant="elevated"
+                                    class="text-white rounded-lg"
                                 >
-                                    <div>
-                                        <v-avatar size="24" class="mr-2">
-                                            <v-img
-                                                :src="item.driver_id.avatar"
-                                                alt="Avatar"
-                                                width="100%"
-                                                height="100%"
-                                                cover
-                                            />
-                                        </v-avatar>
-                                    </div>
-                                    <div>
-                                        <v-list-item-title>{{
-                                            item.driver_id.name
-                                        }}</v-list-item-title>
-                                        <v-list-item-subtitle
-                                            >{{
-                                                `${item.model_id.brand_id.name} ${item.model_id.name}`
-                                            }}
-                                            ({{
-                                                new Date(
-                                                    item.year
-                                                ).getFullYear()
-                                            }})</v-list-item-subtitle
+                                    <v-icon color="white">mdi-plus</v-icon>
+                                </v-btn>
+                            </router-link>
+                        </v-card-title>
+
+                        <v-list>
+                            <v-list-group
+                                v-for="item in vehicles"
+                                :key="item._id"
+                                :value="item.plate"
+                            >
+                                <template v-slot:activator="{ props }">
+                                    <v-list-item v-bind="props">
+                                        <v-list-item-title
+                                            class="font-weight-bold"
                                         >
-                                    </div>
-                                </v-list-item-content>
-
-                                <div
-                                    class="rounded-circle me-3"
-                                    :class="getStatus(item).color"
-                                    style="width: 10px; height: 10px"
-                                />
-                            </div>
-                        </v-list-item>
-                    </template>
-
-                    <v-list-item-group>
-                        <v-list-item>
-                            <v-list-item-title class="font-weight-medium">
-                                Detalles del Vehículo
-                            </v-list-item-title>
-                            <v-list-item-content>
-                                <div class="d-flex justify-space-between">
-                                    Color: {{ item.color }}<br />
-                                    Capacidad: {{ item.capacity }}<br />
-                                    Estado:
-                                    {{ getStatus(item).description }}
-                                    <br />
-
-                                    <div class="text-center">
-                                        <v-menu location="start">
-                                            <template
-                                                v-slot:activator="{ props }"
+                                            Vehículo: {{ item.plate }}
+                                        </v-list-item-title>
+                                        <div
+                                            class="d-flex justify-space-between"
+                                            v-if="item.driver_id"
+                                        >
+                                            <v-list-item-content
+                                                class="d-flex align-sm-center"
                                             >
-                                                <v-btn
-                                                    icon="$vuetify"
-                                                    variant="flat"
-                                                    v-bind="props"
-                                                >
-                                                    <v-icon>
-                                                        mdi-dots-vertical
-                                                    </v-icon>
-                                                </v-btn>
-                                            </template>
-
-                                            <v-list>
-                                                <v-list-item
-                                                    v-for="(
-                                                        menuItem, index
-                                                    ) in getMenuItems(item)"
-                                                    :key="index"
-                                                    :value="index"
-                                                    @click="menuItem.action"
-                                                >
+                                                <div>
+                                                    <v-avatar
+                                                        size="24"
+                                                        class="mr-2"
+                                                    >
+                                                        <v-img
+                                                            :src="
+                                                                item.driver_id
+                                                                    .avatar
+                                                            "
+                                                            alt="Avatar"
+                                                            width="100%"
+                                                            height="100%"
+                                                            cover
+                                                        />
+                                                    </v-avatar>
+                                                </div>
+                                                <div>
                                                     <v-list-item-title>{{
-                                                        menuItem.title
+                                                        item.driver_id.name
                                                     }}</v-list-item-title>
-                                                </v-list-item>
-                                            </v-list>
-                                        </v-menu>
-                                    </div>
-                                </div>
-                            </v-list-item-content>
-                        </v-list-item>
-                    </v-list-item-group>
-                </v-list-group>
-            </v-list>
-        </v-card>
-    </div>
+                                                    <v-list-item-subtitle
+                                                        >{{
+                                                            `${item.model_id.brand_id.name} ${item.model_id.name}`
+                                                        }}
+                                                        ({{
+                                                            new Date(
+                                                                item.year
+                                                            ).getFullYear()
+                                                        }})</v-list-item-subtitle
+                                                    >
+                                                </div>
+                                            </v-list-item-content>
 
-    <!-- <v-alert v-if="message" type="success" class="mt-4 toast-message">{{
-        message
-    }}</v-alert> -->
+                                            <div
+                                                class="rounded-circle me-3"
+                                                :class="getStatus(item).color"
+                                                style="
+                                                    width: 10px;
+                                                    height: 10px;
+                                                "
+                                            />
+                                        </div>
+                                    </v-list-item>
+                                </template>
+
+                                <v-list-item-group>
+                                    <v-list-item>
+                                        <v-list-item-title
+                                            class="font-weight-medium"
+                                        >
+                                            Detalles del Vehículo
+                                        </v-list-item-title>
+                                        <v-list-item-content>
+                                            <div
+                                                class="d-flex justify-space-between"
+                                            >
+                                                Color: {{ item.color }}<br />
+                                                Capacidad: {{ item.capacity
+                                                }}<br />
+                                                Estado:
+                                                {{
+                                                    getStatus(item).description
+                                                }}
+                                                <br />
+
+                                                <div class="text-center">
+                                                    <v-menu location="start">
+                                                        <template
+                                                            v-slot:activator="{
+                                                                props,
+                                                            }"
+                                                        >
+                                                            <v-btn
+                                                                icon="$vuetify"
+                                                                variant="flat"
+                                                                v-bind="props"
+                                                            >
+                                                                <v-icon>
+                                                                    mdi-dots-vertical
+                                                                </v-icon>
+                                                            </v-btn>
+                                                        </template>
+
+                                                        <v-list>
+                                                            <v-list-item
+                                                                v-for="(
+                                                                    menuItem,
+                                                                    index
+                                                                ) in getMenuItems(
+                                                                    item
+                                                                )"
+                                                                :key="index"
+                                                                :value="index"
+                                                                @click="
+                                                                    menuItem.action
+                                                                "
+                                                            >
+                                                                <v-list-item-title
+                                                                    >{{
+                                                                        menuItem.title
+                                                                    }}</v-list-item-title
+                                                                >
+                                                            </v-list-item>
+                                                        </v-list>
+                                                    </v-menu>
+                                                </div>
+                                            </div>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </v-list-item-group>
+                            </v-list-group>
+                        </v-list>
+                    </v-card>
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-col cols="12" md="6">
+                    <v-pagination
+                        :length="pages"
+                        v-on:update:model-value="(v) => changePage(v)"
+                    />
+                </v-col>
+                <v-col
+                    cols="12"
+                 md="6"
+                    class="d-flex justify-end items-center mx-auto h-100"
+                >
+                    Total: {{ total }}
+                </v-col>
+            </v-row>
+        </v-container>
+    </div>
 
     <v-dialog v-model="isActiveModal" max-width="800">
         <template v-slot:default>
             <v-card>
                 <v-card-title>
-                    {{
-                        clickCount === 0
-                            ? !origen
-                                ? "Seleccione"
-                                : "Click para Modificar"
-                            : clickCount === 1
-                            ? !destino
-                                ? "Seleccione"
-                                : "Click para Modificar"
-                            : "Click para Modificar"
-                    }}
-                    el {{ clickCount === 0 ? "Origen" : "Destino" }} del Viaje
+                    {{ modalTitle }}
                 </v-card-title>
                 <v-card-text>
                     <div class="pb-3 d-flex ga-10">
@@ -234,7 +267,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch, type Ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch, type Ref } from "vue";
 import type { Vehicle } from "../../types/vehicle";
 import { useVehicleStore } from "../../stores/vehicles";
 import { useRoute } from "vue-router";
@@ -272,16 +305,28 @@ const blockMapFunctions = ref(false);
 const newStatusRoute = ref<{ id: number; name: string } | null>(null);
 const isLoading = ref(false);
 const mapRef = ref();
+const current = ref(1);
+const offset = ref(5);
+const pages = ref(0);
+const total = ref(0);
 
 const statusOptions: { id: number; name: string }[] = [
     { id: 1, name: "Finalizado" },
     { id: 2, name: "Cancelado" },
-    { id: 2, name: "Cancelado por el Usuario" },
+    { id: 3, name: "Cancelado por el Usuario" },
 ];
+
+const modalTitle = computed(() => {
+    const label = clickCount.value === 0 ? "Origen" : "Destino";
+    const selected = clickCount.value === 0 ? origen.value : destino.value;
+    return `${
+        selected ? "Click para Modificar" : "Seleccione"
+    } el ${label} del Viaje`;
+});
 
 function getMenuItems(vehicle: Vehicle) {
     return [
-        ...(vehicle.status_id
+        ...(vehicle.status
             ? [
                   {
                       title: "Gestionar Ruta",
@@ -312,8 +357,8 @@ function getMenuItems(vehicle: Vehicle) {
     ];
 }
 
-const getStatus = ({ lastRoute, status_id }: Vehicle) => {
-    if (!status_id) {
+const getStatus = ({ lastRoute, status }: Vehicle) => {
+    if (!status) {
         return { description: "En Mantenimiento", color: "bg-grey" };
     }
     if (lastRoute?.status === STATUSES.ACTIVE) {
@@ -327,7 +372,7 @@ async function getAddressFromLatLng(lat: number, lon: number): Promise<string> {
 
     try {
         const response = await axios.get(url);
-        const { data } = await response;
+        const { data } = response;
         return data.display_name || "Dirección no encontrada";
     } catch (error) {
         console.error("Error al obtener la dirección:", error);
@@ -335,15 +380,33 @@ async function getAddressFromLatLng(lat: number, lon: number): Promise<string> {
     }
 }
 
+function changePage(value: number) {
+    current.value = value;
+    getVehicles();
+}
+
 async function getVehicles() {
     isLoading.value = true;
 
     try {
-        const data = await vehicleStore.fetchVehicles();
-        if (!data) return;
+        const { data, pagination } = await vehicleStore.fetchVehicles({
+            page: current.value,
+            limit: offset.value,
+        });
+
+        if (!data) {
+            showToast({
+                message: "No se encontraron vehículos.",
+                icon: "error",
+            });
+            return;
+        }
 
         vehicles.value = data;
+        pages.value = pagination.totalPages;
+        total.value = pagination.total;
     } catch (error) {
+        showToast({ message: vehicleStore.error, icon: "error" });
         console.error("Error al obtener usuarios:", error);
     } finally {
         isLoading.value = false;

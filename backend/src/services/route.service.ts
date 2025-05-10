@@ -43,13 +43,15 @@ export default class RouteService {
     static async updateStatus({
         _id,
         status,
+        updatedBy,
     }: {
         _id: Types.ObjectId;
         status: number;
+        updatedBy: Types.ObjectId;
     }) {
         const updatedRoute = await Route.findByIdAndUpdate(
             _id,
-            { status },
+            { status, updatedBy },
             { new: true }
         );
 

@@ -3,11 +3,16 @@ import VehicleController from "../controllers/vehicle.controller";
 import {
     validateRegisterVehicleDriver,
     validateVehicleIdParam,
+    validateVehiclePaginationParams,
 } from "../validation/vehicleDriverRegister.validation";
 
 const vehicleRoutes = Router();
 
-vehicleRoutes.get("/", VehicleController.all);
+vehicleRoutes.get(
+    "/:page/:limit",
+    validateVehiclePaginationParams,
+    VehicleController.all
+);
 
 vehicleRoutes.get("/:id", validateVehicleIdParam, VehicleController.byId);
 

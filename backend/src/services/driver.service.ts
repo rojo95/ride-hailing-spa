@@ -8,12 +8,14 @@ export default class DriverService {
         lastname,
         licenseExpiry,
         avatar,
+        createdBy,
     }: {
         idCard: string;
         name: string;
         lastname: string;
         licenseExpiry: Date;
         avatar: string;
+        createdBy: Types.ObjectId;
     }): Promise<IDriver> {
         const d = await Driver.findOne({ idCard });
         if (d) throw Error("El conductor ya está registrado.");
@@ -24,6 +26,7 @@ export default class DriverService {
             lastname,
             licenseExpiry,
             avatar,
+            createdBy,
         });
         await driver.save();
 

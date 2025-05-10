@@ -8,6 +8,7 @@ import { IRouteBase, IRouteUpdateStatus } from "../models/route.model";
 import { STATUSES } from "../constants/routes";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { jwtConfig } from "../config/jwt.config";
+import { decodeTokenFromRequest } from "../utils/decodeToken";
 
 export default class RouteController {
     static async getLastRouteByVehicleId(
@@ -44,16 +45,11 @@ export default class RouteController {
             req.body;
 
         try {
-            const token = req.header("Authorization")?.replace("Bearer ", "");
-            if (!req.user || !token) throw new Error("Sesión no iniciada");
+            const { id: authId } = decodeTokenFromRequest(req);
 
-            const decoded = jwt.verify(token, jwtConfig.secret);
+            if (!authId) throw Error("No se ha obtenido id de usuario");
 
-            if (typeof decoded !== "object" || !("id" in decoded)) {
-                throw new Error("Token inválido");
-            }
-
-            if (decoded) logger.debug(decoded.id);
+            logger.debug(authId);
 
             const vehicle = await VehicleService.vehicleById(vehicle_id);
             if (!vehicle) throw Error("Vehículo no encontrado");
@@ -75,7 +71,7 @@ export default class RouteController {
                 to_address,
                 status,
                 vehicle_id,
-                createdBy: decoded.id,
+                createdBy: authId,
             });
             res.status(200).json(route);
         } catch (error) {
@@ -98,6 +94,10 @@ export default class RouteController {
     ) {
         const { _id, status } = req.body;
         try {
+            const { id: authId } = decodeTokenFromRequest(req);
+
+            if (!authId) throw Error("No se ha obtenido id de usuario");
+
             const route = await RouteService.getById(_id);
 
             if (!route) throw Error("La ruta no existe");
@@ -105,6 +105,7 @@ export default class RouteController {
             const updated = await RouteService.updateStatus({
                 _id: route._id,
                 status,
+                updatedBy: authId,
             });
 
             res.status(200).json(updated);

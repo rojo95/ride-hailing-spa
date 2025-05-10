@@ -1,14 +1,14 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { fetchWithAuthToken, handleAxiosError } from "../utils/api";
-import type { Vehicle, VehicleForm } from "../types/vehicle";
+import type { Vehicle, VehicleForm, VehiclesResponse } from "../types/vehicle";
 import type { CarBrandResponse } from "../types/carBrand";
 import type { Driver, DriverForm } from "../types/driver";
 import type { FIleUploadResponse } from "../types/file";
 
 export const useVehicleStore = defineStore("vehicles", () => {
     const error = ref("");
-    const vehicles = ref<Vehicle[]>([]);
+    const vehicles = ref<VehiclesResponse | null>(null);
     const carBrands = ref<CarBrandResponse[]>([]);
 
     const setError = (message: string) => {
@@ -18,11 +18,17 @@ export const useVehicleStore = defineStore("vehicles", () => {
         error.value = "";
     };
 
-    const fetchVehicles = async () => {
+    const fetchVehicles = async ({
+        page,
+        limit,
+    }: {
+        page: number;
+        limit: number;
+    }) => {
         clearError();
         try {
-            const response = await fetchWithAuthToken<Vehicle[]>({
-                url: "vehicles/",
+            const response = await fetchWithAuthToken<VehiclesResponse>({
+                url: `vehicles/${page}/${limit}`,
             });
 
             vehicles.value = response;

@@ -95,25 +95,7 @@
                                     <v-avatar>
                                         <v-icon
                                             color="indigo"
-                                            icon="mdi-map-marker"
-                                        ></v-icon>
-                                    </v-avatar>
-                                </template>
-
-                                <v-list-item-title
-                                    >1400 Main Street</v-list-item-title
-                                >
-                                <v-list-item-subtitle
-                                    >Orlando, FL 79938</v-list-item-subtitle
-                                >
-                            </v-list-item>
-
-                            <v-list-item>
-                                <template v-slot:prepend>
-                                    <v-avatar>
-                                        <v-icon
-                                            color="indigo"
-                                            icon="mdi-map-marker"
+                                            icon="mdi-clock-time-eight-outline"
                                         ></v-icon>
                                     </v-avatar>
                                 </template>
@@ -245,7 +227,7 @@
 
                                 <v-list-item-title>
                                     {{
-                                        vehicle?.status_id
+                                        vehicle?.status
                                             ? "Activo"
                                             : "En Mantenimiento"
                                     }}
@@ -271,23 +253,28 @@
                                     vehicle?.routes?.length > 0
                                 "
                             >
-                                <template v-slot:prepend>
-                                    <v-icon
-                                        icon="mdi-car-back"
-                                        color="green"
-                                    ></v-icon>
-                                </template>
-
-                                <v-list-content>
-                                    <p>
-                                        <strong> Desde: </strong>
-                                        {{ item.from_address }}
-                                    </p>
-                                    <p>
-                                        <strong> Hasta: </strong>
-                                        {{ item.to_address }}
-                                    </p>
-                                </v-list-content>
+                                <div>
+                                    {{ routeStatus(item.status).description }}
+                                    <div class="d-flex ga-5">
+                                        <div>
+                                            <v-icon
+                                                icon="mdi-car-back"
+                                                :color="
+                                                    routeStatus(item.status)
+                                                        .color
+                                                "
+                                            ></v-icon>
+                                        </div>
+                                        <p>
+                                            <strong> Desde: </strong>
+                                            {{ item.from_address }}
+                                        </p>
+                                        <p>
+                                            <strong> Hasta: </strong>
+                                            {{ item.to_address }}
+                                        </p>
+                                    </div>
+                                </div>
                             </v-list-item>
                             <v-list-item v-else>
                                 No se le han asignado rutas aún
@@ -309,6 +296,7 @@ import { showToast } from "../../utils/swalToast";
 import type { Vehicle } from "../../types/vehicle";
 import { calculateTime, formatDate } from "../../utils/date";
 import { useRouter } from "vue-router";
+import { STATUSES } from "../../constants/routes";
 
 const router = useRouter();
 const isLoading = ref(true);
@@ -316,6 +304,23 @@ const vehicleStore = useVehicleStore();
 const route = useRoute();
 const id = route.params.id;
 const vehicle = ref<Vehicle | null>();
+
+const routeStatus = (
+    status: number
+): { description: string; color: string } => {
+    switch (status) {
+        case STATUSES.ACTIVE:
+            return { description: "Activa", color: "grey" };
+        case STATUSES.CANCELLED:
+            return { description: "Cancelada", color: "red" };
+        case STATUSES.CANCELLED_BY_DRIVER:
+            return { description: "Cancelada por el usuario", color: "red" };
+        case STATUSES.FINISHED:
+            return { description: "Finalizada", color: "green" };
+        default:
+            return { description: "Activa", color: "grey" };
+    }
+};
 
 async function getVehicle() {
     if (!id || typeof id !== "string") return;

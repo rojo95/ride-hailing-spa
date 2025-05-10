@@ -24,6 +24,7 @@ export default class VehicleService {
         capacity,
         picture,
         driver_id,
+        createdBy,
     }: RegisterVehicleRequest): Promise<IVehicle> {
         const existingVehicle = await Vehicle.findOne({ plate });
 
@@ -39,6 +40,7 @@ export default class VehicleService {
             capacity,
             picture,
             driver_id,
+            createdBy,
         });
 
         await vehicle.save();
@@ -68,29 +70,42 @@ export default class VehicleService {
         return vehicleWithRoutes;
     }
 
-    static async getAllVehiclesWithLastRoute() {
-        const vehicles = await Vehicle.find({})
-            .populate({
-                path: "model_id",
-                populate: { path: "brand_id" },
-            })
-            .populate("driver_id")
-            .sort({ createdAt: -1 });
+    static async getAllVehiclesWithLastRoute({
+        limit,
+        offset,
+    }: {
+        limit: number;
+        offset: number;
+    }) {
+        const [vehicles, total] = await Promise.all([
+            Vehicle.find({})
+                .sort({ createdAt: -1 })
+                .populate({
+                    path: "model_id",
+                    populate: { path: "brand_id" },
+                })
+                .populate("driver_id")
+                .skip(offset)
+                .limit(limit),
+            Vehicle.countDocuments(),
+        ]);
 
         const results = await Promise.all(
             vehicles.map(async (vehicle) => {
-                // Buscar la última ruta para cada vehículo, ordenando por `createdAt` de forma descendente
                 const lastRoute = await Route.findOne({
                     vehicle_id: vehicle._id,
-                }).sort({ createdAt: -1 }); // Obtiene la última ruta
+                }).sort({ createdAt: -1 });
 
                 return {
                     ...vehicle.toObject(),
-                    lastRoute, // Incluye la última ruta en el objeto del vehículo
+                    lastRoute,
                 };
             })
         );
 
-        return results;
+        return {
+            vehicles: results,
+            total,
+        };
     }
 }
