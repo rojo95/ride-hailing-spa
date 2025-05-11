@@ -83,25 +83,58 @@ export default class VehicleService {
     static async getAllVehiclesWithLastRoute({
         limit,
         offset,
+        search,
     }: {
         limit: number;
         offset: number;
+        search?: string;
     }) {
-        const [vehicles, total] = await Promise.all([
-            Vehicle.find({})
-                .sort({ createdAt: -1 })
-                .populate({
-                    path: "model_id",
-                    populate: { path: "brand_id" },
-                })
-                .populate("driver_id")
-                .skip(offset)
-                .limit(limit),
-            Vehicle.countDocuments(),
-        ]);
+        // Buscar todos los vehículos con populate
+        const allVehicles = await Vehicle.find({})
+            .sort({ createdAt: -1 })
+            .populate({
+                path: "model_id",
+                populate: { path: "brand_id" },
+            })
+            .populate("driver_id")
+            .exec();
+
+        // Filtrar en memoria si hay término de búsqueda
+        let filteredVehicles = allVehicles;
+
+        if (search) {
+            const lowerSearch = search.toLowerCase();
+
+            filteredVehicles = allVehicles.filter((vehicle) => {
+                const driver = vehicle.driver_id as any;
+                const model = vehicle.model_id as any;
+                const brand = model?.brand_id as any;
+
+                const valuesToSearch = [
+                    vehicle.plate,
+                    vehicle.year?.getFullYear().toString(),
+                    driver?.name,
+                    driver?.lastname,
+                    model?.name,
+                    brand?.name,
+                    vehicle.color,
+                ]
+                    .filter(Boolean)
+                    .map((val) => val.toString().toLowerCase());
+
+                return valuesToSearch.some((val) => val.includes(lowerSearch));
+            });
+        }
+
+        const total = filteredVehicles.length;
+
+        const paginatedVehicles = filteredVehicles.slice(
+            offset,
+            offset + limit
+        );
 
         const results = await Promise.all(
-            vehicles.map(async (vehicle) => {
+            paginatedVehicles.map(async (vehicle) => {
                 const lastRoute = await Route.findOne({
                     vehicle_id: vehicle._id,
                 }).sort({ createdAt: -1 });

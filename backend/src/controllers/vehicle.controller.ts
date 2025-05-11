@@ -24,11 +24,13 @@ export default class VehicleController {
             const page = parseInt(req.params.page as string) || 1;
             const limit = parseInt(req.params.limit as string) || 10;
             const offset = (page - 1) * limit;
+            const search = req.query.search?.toString() || "";
 
             const { vehicles, total } =
                 await VehicleService.getAllVehiclesWithLastRoute({
                     limit,
                     offset,
+                    search,
                 });
 
             res.status(200).json({

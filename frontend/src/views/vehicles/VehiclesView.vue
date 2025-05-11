@@ -5,17 +5,35 @@
             <v-row justify="center">
                 <v-col cols="12" sm="10">
                     <v-card class="w-100" width="300">
-                        <v-card-title class="d-flex justify-space-between">
-                            <p>Vehículos</p>
-                            <router-link to="/vehicles/create">
-                                <v-btn
-                                    color="green"
-                                    variant="elevated"
-                                    class="text-white rounded-lg"
-                                >
-                                    <v-icon color="white">mdi-plus</v-icon>
-                                </v-btn>
-                            </router-link>
+                        <v-card-title class="d-flex">
+                            <v-row>
+                                <v-col cols="6">
+                                    <p>Vehículos</p>
+                                </v-col>
+                                <v-col class="d-flex justify-end" cols="6">
+                                    <v-text-field
+                                        prepend-inner-icon="mdi-car-back"
+                                        v-model="search"
+                                        label="Buscar"
+                                        type="text"
+                                        required
+                                        variant="underlined"
+                                        @input="Search"
+                                    />
+                                    <router-link to="/vehicles/create">
+                                        <v-btn
+                                            color="green"
+                                            variant="elevated"
+                                            class="text-white rounded-lg"
+                                            height="45"
+                                        >
+                                            <v-icon color="white"
+                                                >mdi-plus</v-icon
+                                            >
+                                        </v-btn>
+                                    </router-link>
+                                </v-col>
+                            </v-row>
                         </v-card-title>
 
                         <v-list v-if="vehicles.length > 0">
@@ -368,6 +386,8 @@ const pages = ref(0);
 const total = ref(0);
 const showStatuses = ref(false);
 const newStatus = ref<number>(VEHICLE_STATUSES.AVAILABLE);
+const search = ref("");
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const statusOptions: { id: number; name: string }[] = [
     { id: 1, name: "Finalizado" },
@@ -382,6 +402,18 @@ const modalTitle = computed(() => {
         selected ? "Click para Modificar" : "Seleccione"
     } el ${label} del Viaje`;
 });
+
+async function Search() {
+    // Reiniciar el temporizador si ya existe
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+
+    // Iniciar un nuevo temporizador de 3 segundos
+    searchTimeout = setTimeout(() => {
+        getVehicles();
+    }, 1500);
+}
 
 function getMenuItems(vehicle: Vehicle) {
     return [
@@ -507,6 +539,7 @@ async function getVehicles() {
         const { data, pagination } = await vehicleStore.fetchVehicles({
             page: current.value,
             limit: offset.value,
+            search: search.value,
         });
 
         if (!data) {

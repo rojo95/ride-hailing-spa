@@ -26,14 +26,21 @@ export const useVehicleStore = defineStore("vehicles", () => {
     const fetchVehicles = async ({
         page,
         limit,
+        search,
     }: {
         page: number;
         limit: number;
+        search?: string;
     }) => {
         clearError();
         try {
+            const query = new URLSearchParams();
+            if (search) query.append("search", search);
+
             const response = await fetchWithAuthToken<VehiclesResponse>({
-                url: `vehicles/${page}/${limit}`,
+                url: `vehicles/${page}/${limit}${
+                    search ? "?" + query.toString() : ""
+                }`,
             });
 
             vehicles.value = response;
