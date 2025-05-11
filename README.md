@@ -171,17 +171,71 @@ ride-hailing-spa/
 
 ### Scripts
 
--   **`npm run dev`**: Inicia el backend en modo desarrollo con `nodemon`.
--   **`npm run build`**: Compila el código TypeScript a JavaScript en la carpeta `dist`.
--   **`npm run start`**: Inicia el servidor en producción, ejecutando el archivo `dist/server.js`.
--   **`npm run seed:users`**: Poblar la base de datos con usuarios de prueba.
--   **`npm run seed:brands`**: Poblar la base de datos con marcas de vehículos de prueba.
--   **`npm run seed:models`**: Poblar la base de datos con modelos de vehículos de prueba.
--   **`npm run seed:drivers`**: Poblar la base de datos con conductores de prueba.
--   **`npm run seed:users:reset`**: Restablecer los usuarios en la base de datos.
--   **`npm run seed:brands:reset`**: Restablecer las marcas de vehículos.
--   **`npm run seed:models:reset`**: Restablecer los modelos de vehículos.
--   **`npm run seed:drivers:reset`**: Restablecer los conductores.
+-   Inicia el backend en modo desarrollo con `nodemon`.
+
+```bash
+npm run dev
+```
+
+-   Compila el código TypeScript a JavaScript en la carpeta `dist`.
+
+```bash
+npm run build
+```
+
+-   Inicia el servidor en producción, ejecutando el archivo `dist/server.js`.
+
+```bash
+npm run start
+```
+
+-   Poblar la base de datos con usuarios de prueba.
+
+```bash
+npm run seed:users
+```
+
+-   Poblar la base de datos con marcas de vehículos de prueba.
+
+```bash
+npm run seed:brands
+```
+
+-   Poblar la base de datos con modelos de vehículos de prueba.
+
+```bash
+npm run seed:models
+```
+
+-   Poblar la base de datos con conductores de prueba.
+
+```bash
+npm run seed:drivers
+```
+
+-   Restablecer los usuarios en la base de datos.
+
+```bash
+npm run seed:users:reset
+```
+
+-   Restablecer las marcas de vehículos.
+
+```bash
+npm run seed:brands:reset
+```
+
+-   Restablecer los modelos de vehículos.
+
+```bash
+npm run seed:models:reset
+```
+
+-   Restablecer los conductores.
+
+```bash
+npm run seed:drivers:reset
+```
 
 ### Docker
 
