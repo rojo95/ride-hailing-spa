@@ -5,8 +5,7 @@ import Driver from "./driver.model";
 import { IRoute } from "./route.model";
 import User from "./user.model";
 
-export interface IVehicle extends SoftDeleteDocument {
-    _id: Types.ObjectId;
+export interface IVehicleBase {
     plate: string;
     model_id: Types.ObjectId;
     year: Date;
@@ -18,6 +17,9 @@ export interface IVehicle extends SoftDeleteDocument {
     routes?: IRoute[];
     createdBy: Types.ObjectId;
     updatedBy?: Types.ObjectId;
+}
+export interface IVehicle extends SoftDeleteDocument, IVehicleBase {
+    _id: Types.ObjectId;
 }
 
 const vehicleSchema = new Schema<IVehicle>(

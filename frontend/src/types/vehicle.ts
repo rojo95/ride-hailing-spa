@@ -27,6 +27,10 @@ export interface VehicleForm {
     status: number | null;
 }
 
+export type UpdateVehicleForm = Omit<VehicleForm, "picture"> & {
+    picture?: File | null;
+};
+
 export interface VehiclesResponse {
     data: Vehicle[];
     pagination: {

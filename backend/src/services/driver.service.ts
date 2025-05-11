@@ -1,6 +1,6 @@
-import { FilterQuery, Types } from "mongoose";
+import { Types } from "mongoose";
 import Driver, { IDriver } from "../models/driver.model";
-import { RegisterDriverService } from "../types/driver";
+import { RegisterDriverService, UpdateDriverService } from "../types/driver";
 import logger from "../utils/logger";
 
 export default class DriverService {
@@ -46,5 +46,30 @@ export default class DriverService {
         const result = await Driver.deleteOne({ _id });
 
         return result.deletedCount === 1;
+    }
+
+    static async update(
+        _id: Types.ObjectId,
+        updates: UpdateDriverService
+    ): Promise<IDriver> {
+        try {
+            const driver = await Driver.findByIdAndUpdate(
+                _id,
+                {
+                    $set: {
+                        ...updates,
+                        updatedAt: new Date(),
+                    },
+                },
+                { new: true }
+            );
+
+            if (!driver) throw new Error("Conductor no encontrado");
+
+            return driver.toObject();
+        } catch (error) {
+            logger.error("Error al actualizar conductor:", error);
+            throw new Error("No se pudo actualizar el conductor");
+        }
     }
 }

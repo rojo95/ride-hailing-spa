@@ -1,6 +1,6 @@
 import { FilterQuery, Types } from "mongoose";
 import Vehicle, { IVehicle } from "../models/vehicle.model";
-import { RegisterVehicleRequest } from "../types/vehicle";
+import { RegisterVehicleRequest, UpdateVehicleService } from "../types/vehicle";
 import Route from "../models/route.model";
 import logger from "../utils/logger";
 
@@ -157,6 +157,31 @@ export default class VehicleService {
             return result.modifiedCount > 0;
         } catch (error) {
             throw new Error("Error al restaurar el vehículo");
+        }
+    }
+
+    static async update(
+        _id: Types.ObjectId,
+        updates: UpdateVehicleService
+    ): Promise<IVehicle> {
+        try {
+            const vehicle = await Vehicle.findByIdAndUpdate(
+                _id,
+                {
+                    $set: {
+                        ...updates,
+                        updatedAt: new Date(),
+                    },
+                },
+                { new: true }
+            );
+
+            if (!vehicle) throw new Error("Vehículo no encontrado");
+
+            return vehicle.toObject();
+        } catch (error) {
+            logger.error("Error al actualizar vehículo:", error);
+            throw new Error("No se pudo actualizar el vehículo");
         }
     }
 }

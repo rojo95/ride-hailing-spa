@@ -1,9 +1,14 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { fetchWithAuthToken, handleAxiosError } from "../utils/api";
-import type { Vehicle, VehicleForm, VehiclesResponse } from "../types/vehicle";
+import type {
+    UpdateVehicleForm,
+    Vehicle,
+    VehicleForm,
+    VehiclesResponse,
+} from "../types/vehicle";
 import type { CarBrandResponse } from "../types/carBrand";
-import type { Driver, DriverForm } from "../types/driver";
+import type { Driver, DriverForm, UpdateDriverForm } from "../types/driver";
 import type { FIleUploadResponse } from "../types/file";
 
 export const useVehicleStore = defineStore("vehicles", () => {
@@ -123,6 +128,74 @@ export const useVehicleStore = defineStore("vehicles", () => {
         }
     };
 
+    const updateVehicle = async ({
+        vehicleId,
+        driver,
+        vehicle,
+    }: {
+        vehicleId: string;
+        driver: UpdateDriverForm;
+        vehicle: UpdateVehicleForm;
+    }): Promise<RegisterDriverVehicleResponse | void> => {
+        clearError();
+        if (!vehicle.year || !vehicle.model_id || !vehicle.capacity) return;
+
+        try {
+            let avatarFile = null;
+            if (driver.avatar) {
+                const avatarForm = new FormData();
+                avatarForm.append("name", driver.idCard.toLowerCase());
+                avatarForm.append("file", driver.avatar);
+                avatarFile = await fetchWithAuthToken<FIleUploadResponse>({
+                    url: "files/upload",
+                    method: "POST",
+                    data: avatarForm,
+                });
+            }
+
+            let pictureFile = null;
+            if (vehicle.picture) {
+                const pictureForm = new FormData();
+                pictureForm.append("name", vehicle.plate.toLowerCase());
+                pictureForm.append("file", vehicle.picture);
+                pictureFile = await fetchWithAuthToken<FIleUploadResponse>({
+                    url: "files/upload",
+                    method: "POST",
+                    data: pictureForm,
+                });
+            }
+
+            const urlBase = import.meta.env.VITE_API_HOST;
+
+            const response =
+                await fetchWithAuthToken<RegisterDriverVehicleResponse>({
+                    url: "vehicles/" + vehicleId,
+                    method: "PUT",
+                    data: {
+                        ...driver,
+                        plate: vehicle.plate,
+                        model_id: vehicle.model_id,
+                        year: new Date(vehicle.year, 0),
+                        color: vehicle.color,
+                        capacity: vehicle.capacity,
+                        ...(driver.avatar && {
+                            avatar: urlBase + avatarFile?.url,
+                        }),
+                        ...(vehicle.picture && {
+                            picture: urlBase + pictureFile?.url,
+                        }),
+                        status: vehicle.status,
+                    },
+                });
+
+            return response;
+        } catch (err) {
+            setError(handleAxiosError(err) || "Error al crear el vehículo");
+            console.error(`${error.value}: "`, err);
+            throw error.value;
+        }
+    };
+
     async function getVehicleById(_id: string) {
         clearError();
         try {
@@ -175,5 +248,6 @@ export const useVehicleStore = defineStore("vehicles", () => {
         createVehicle,
         getVehicleById,
         deleteVehicle,
+        updateVehicle,
     };
 });

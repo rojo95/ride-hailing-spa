@@ -368,9 +368,11 @@ function getMenuItems(vehicle: Vehicle) {
         },
         {
             title: "Editar",
-            action: () => {
-                console.log("Editar:", vehicle._id);
-            },
+            action: () =>
+                router.push({
+                    name: "vehicles-create",
+                    query: { vehicleId: vehicle._id },
+                }),
         },
         {
             title: "Eliminar",
@@ -748,12 +750,6 @@ onMounted(() => {
 </script>
 
 <style>
-.toast-message {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-}
-
 .leaflet-map {
     height: 300px;
     width: 100%;

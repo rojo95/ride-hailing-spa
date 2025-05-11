@@ -20,16 +20,17 @@
                                         @click="router.back"
                                     ></v-btn>
                                     <v-spacer></v-spacer>
+                                    <v-btn
+                                        icon="mdi-pencil"
+                                        variant="elevated"
+                                        color="green"
+                                        @click="editDriver"
+                                    />
                                     <!-- <v-btn
-                            icon="mdi-pencil"
-                            variant="elevated"
-                            color="green"
-                        ></v-btn>
-                        <v-btn
-                            icon="mdi-dots-vertical"
-                            variant="elevated"
-                            color="green"
-                        ></v-btn> -->
+                                        icon="mdi-dots-vertical"
+                                        variant="elevated"
+                                        color="green"
+                                    /> -->
                                 </v-card-title>
 
                                 <v-spacer></v-spacer>
@@ -332,19 +333,28 @@
 import { onMounted, ref } from "vue";
 import FullScreenOverlay from "../../components/FullScreenOverlay.vue";
 import { useVehicleStore } from "../../stores/vehicles";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { ShowToast } from "../../utils/notification";
 import type { Vehicle } from "../../types/vehicle";
 import { calculateTime, formatDate } from "../../utils/date";
-import { useRouter } from "vue-router";
 import { STATUSES } from "../../constants/routes";
 
+const route = useRoute();
+const message = route.query.msg;
 const router = useRouter();
 const isLoading = ref(true);
 const vehicleStore = useVehicleStore();
-const route = useRoute();
 const id = route.params.id;
 const vehicle = ref<Vehicle | null>();
+
+function editDriver() {
+    if (!vehicle.value) return;
+
+    router.push({
+        name: "vehicles-create",
+        query: { vehicleId: vehicle.value._id },
+    });
+}
 
 const routeStatus = (
     status: number
@@ -379,5 +389,9 @@ async function getVehicle() {
 
 onMounted(async () => {
     await getVehicle();
+
+    if (typeof message === "string") {
+        ShowToast({ message, icon: "success" });
+    }
 });
 </script>

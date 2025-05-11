@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { handleErrorMessage } from "../utils/handleErrorMessage";
 import VehicleService from "../services/vehicles.service";
 import DriverService from "../services/driver.service";
-import { RegisterVehicleRequest } from "../types/vehicle";
-import { RegisterDriverRequest } from "../types/driver";
+import { RegisterVehicleRequest, UpdateVehicleRequest } from "../types/vehicle";
+import { RegisterDriverRequest, UpdateDriverRequest } from "../types/driver";
 import path from "path";
 import FileService from "../services/file.service";
 import { Types } from "mongoose";
@@ -15,6 +15,8 @@ import logger from "../utils/logger";
 
 type RegisterVehicleDriverRequest = RegisterDriverRequest &
     RegisterVehicleRequest;
+
+type UpdateVehicleDRiverRequest = UpdateDriverRequest & UpdateVehicleRequest;
 
 export default class VehicleController {
     static async all(req: Request, res: Response): Promise<void> {
@@ -243,6 +245,87 @@ export default class VehicleController {
                     error,
                     defaultMessage:
                         "Error inesperado al eliminar el vehículo o su conductor",
+                }),
+                fullError: error,
+            });
+        }
+    }
+
+    static async update(
+        req: Request<{ id: string }, {}, UpdateVehicleDRiverRequest>,
+        res: Response
+    ) {
+        const { id } = req.params;
+        const {
+            idCard,
+            name,
+            lastname,
+            avatar,
+            licenseExpiry,
+            plate,
+            model_id,
+            year,
+            color,
+            capacity,
+            picture,
+            email,
+            phone,
+            status,
+        } = req.body;
+
+        try {
+            const { id: authId } = decodeTokenFromRequest(req);
+
+            if (!authId) throw Error("No se ha obtenido id de usuario");
+
+            // Obtener el vehículo con su conductor
+            const vehicle = await VehicleService.vehicleById(
+                new Types.ObjectId(id)
+            );
+            if (!vehicle || !vehicle.driver_id) {
+                throw new Error("Vehículo o conductor no encontrado");
+            }
+
+            logger.debug("llegamos");
+
+            // Actualizar conductor
+            const driver = await DriverService.update(vehicle.driver_id._id, {
+                idCard,
+                name,
+                lastname,
+                licenseExpiry,
+                email,
+                phone,
+                ...(avatar && { avatar }),
+                updatedBy: authId,
+            });
+
+            if (!driver) throw Error("Error actualizando conductor");
+
+            // Actualizar vehículo
+            const vehicleUpdated = await VehicleService.update(vehicle._id, {
+                plate,
+                model_id,
+                year,
+                color,
+                capacity,
+                status,
+                ...(picture && { picture }),
+                updatedBy: authId,
+            });
+
+            if (!vehicle) throw Error("Error actualizando vehículo");
+
+            res.status(200).json({
+                driver,
+                vehicle: vehicleUpdated,
+            });
+        } catch (error) {
+            res.status(500).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Error inesperado al actualizar vehículo y conductor",
                 }),
                 fullError: error,
             });

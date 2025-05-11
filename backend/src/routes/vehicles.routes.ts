@@ -17,6 +17,8 @@ vehicleRoutes.get(
 
 vehicleRoutes.get("/:id", validateVehicleIdParam, VehicleController.byId);
 
+vehicleRoutes.put("/:id", validateVehicleIdParam, VehicleController.update);
+
 vehicleRoutes.post(
     "/",
     validateRegisterVehicleDriver,

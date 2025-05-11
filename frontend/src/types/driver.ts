@@ -17,3 +17,7 @@ export interface Driver extends DriverBase {
 export interface DriverForm extends DriverBase {
     avatar: File | null;
 }
+
+export interface UpdateDriverForm extends DriverBase {
+    avatar?: File | null;
+}
