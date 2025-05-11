@@ -30,6 +30,7 @@ type ConfirmActionParams = {
     cancelButtonColor?: string;
     icon?: Icon;
     onConfirm: () => Promise<void> | void;
+    onCancel?: () => Promise<void> | void;
 };
 
 export function ShowToast({
@@ -62,6 +63,7 @@ export async function ConfirmAction({
     cancelButtonColor = "#BDBDBD",
     icon = "warning",
     onConfirm,
+    onCancel,
 }: ConfirmActionParams): Promise<void> {
     const result = await Swal.fire({
         title,
@@ -76,5 +78,7 @@ export async function ConfirmAction({
 
     if (result.isConfirmed) {
         await onConfirm();
+    } else if (onCancel) {
+        await onCancel();
     }
 }

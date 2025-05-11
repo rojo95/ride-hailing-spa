@@ -300,7 +300,6 @@ import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import { useRouteStore } from "../../stores/routes";
-import Swal from "sweetalert2";
 import type { Location } from "../../types/location";
 import { ConfirmAction, ShowToast } from "../../utils/notification";
 import { STATUSES } from "../../constants/routes";
@@ -611,56 +610,50 @@ async function createRoute() {
 
     isActiveModal.value = false;
 
-    Swal.fire({
-        title: "¿Desea confirmar la ruta?",
-        text: 'El estatus del conductor se cambiará a "En Servicio".',
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#4CAF50",
-        cancelButtonColor: "#BDBDBD",
-        confirmButtonText: "Aceptar",
-        cancelButtonText: "Cancelar",
-    })
-        .then(async (result) => {
-            if (result.isConfirmed) {
+    try {
+        await ConfirmAction({
+            title: "¿Desea confirmar la ruta?",
+            text: 'El estatus del conductor se cambiará a "En Servicio".',
+            onConfirm: async () => {
                 isLoading.value = true;
-                try {
-                    const route = await routeStore.createRoute({
-                        from,
-                        to,
-                        from_address: origen.value,
-                        to_address: destino.value,
-                        status: STATUSES.ACTIVE,
-                        vehicle_id: vehicleId,
-                    });
 
-                    const vehicle = vehicles.value.find(
-                        (v) => v._id === activeVehicle.value
-                    );
+                const route = await routeStore.createRoute({
+                    from,
+                    to,
+                    from_address: origen.value,
+                    to_address: destino.value,
+                    status: STATUSES.ACTIVE,
+                    vehicle_id: vehicleId,
+                });
 
-                    if (vehicle) {
-                        vehicle.status = VEHICLE_STATUSES.IN_SERVICE;
-                        vehicle.lastRoute = route;
-                    }
+                const vehicle = vehicles.value.find(
+                    (v) => v._id === activeVehicle.value
+                );
 
-                    activeVehicle.value = null;
-                    ShowToast({
-                        message:
-                            'Ruta asignada de manera exitosa, estatus del conductor cambiado a "En Servicio".',
-                        icon: "success",
-                    });
-                } catch (err) {
-                    ShowToast({
-                        message:
-                            routeStore.error || "Error al registrar vehículo.",
-                        icon: "error",
-                    });
+                if (vehicle) {
+                    vehicle.status = VEHICLE_STATUSES.IN_SERVICE;
+                    vehicle.lastRoute = route;
                 }
-            } else {
+
+                activeVehicle.value = null;
+                ShowToast({
+                    message:
+                        'Ruta asignada de manera exitosa, estatus del conductor cambiado a "En Servicio".',
+                    icon: "success",
+                });
+            },
+            onCancel: () => {
                 isActiveModal.value = true;
-            }
-        })
-        .finally(() => (isLoading.value = false));
+            },
+        });
+    } catch (error) {
+        ShowToast({
+            message: vehicleStore.error,
+            icon: "error",
+        });
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 async function setAddress(refToUpdate: Ref<string>, lat: number, lon: number) {
@@ -677,50 +670,39 @@ async function updateRoute() {
 
     isActiveModal.value = false;
 
-    Swal.fire({
-        title: "¿Seguro que desea cambiar el estado?",
-        text: "Verifique que los datos antes de hacer el cambio.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#4CAF50",
-        cancelButtonColor: "#BDBDBD",
-        confirmButtonText: "Aceptar",
-        cancelButtonText: "Cancelar",
-    })
-        .then(async (result) => {
-            if (result.isConfirmed) {
+    try {
+        await ConfirmAction({
+            title: "¿Seguro que desea cambiar el estado?",
+            text: "Verifique que los datos antes de hacer el cambio.",
+            onConfirm: async () => {
                 isLoading.value = true;
-                try {
-                    const route = await routeStore.updateStatusRoute({
-                        id: routeId,
-                        status: routeNewStatusData.id,
-                    });
+                const route = await routeStore.updateStatusRoute({
+                    id: routeId,
+                    status: routeNewStatusData.id,
+                });
 
-                    console.log(route);
-
-                    if (vehicle) {
-                        vehicle.lastRoute = route;
-                    }
-
-                    activeVehicle.value = null;
-                    newStatusRoute.value = null;
-
-                    ShowToast({
-                        message: "Estado actualizado correctamente.",
-                        icon: "success",
-                    });
-                } catch (err) {
-                    ShowToast({
-                        message:
-                            routeStore.error || "Error Actualizando el estado",
-                        icon: "error",
-                    });
+                if (vehicle) {
+                    vehicle.lastRoute = route;
+                    vehicle.status = VEHICLE_STATUSES.AVAILABLE;
                 }
-            } else {
-                isActiveModal.value = true;
-            }
-        })
-        .finally(() => (isLoading.value = false));
+
+                activeVehicle.value = null;
+                newStatusRoute.value = null;
+
+                ShowToast({
+                    message: "Estado actualizado correctamente.",
+                    icon: "success",
+                });
+            },
+        });
+    } catch (error) {
+        ShowToast({
+            message: vehicleStore.error,
+            icon: "error",
+        });
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 async function deleteVehicle(vehicle: Vehicle) {
@@ -737,6 +719,7 @@ async function deleteVehicle(vehicle: Vehicle) {
                     : ""
             }.`,
             onConfirm: async () => {
+                isLoading.value = true;
                 const response = await vehicleStore.deleteVehicle(vehicle._id);
 
                 ShowToast({ message: response.message, icon: "success" });
@@ -749,6 +732,8 @@ async function deleteVehicle(vehicle: Vehicle) {
             message: vehicleStore.error,
             icon: "error",
         });
+    } finally {
+        isLoading.value = false;
     }
 }
 

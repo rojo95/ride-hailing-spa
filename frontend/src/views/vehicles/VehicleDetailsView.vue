@@ -291,7 +291,11 @@
                                 "
                             >
                                 <div>
-                                    {{ routeStatus(item.status).description }}
+                                    <strong>
+                                        {{
+                                            routeStatus(item.status).description
+                                        }}
+                                    </strong>
                                     <div class="d-flex ga-5">
                                         <div>
                                             <v-icon

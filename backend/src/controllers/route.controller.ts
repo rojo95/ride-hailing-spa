@@ -80,7 +80,10 @@ export default class RouteController {
 
             await VehicleService.updateStatus({
                 id: vehicle_id,
-                status: VEHICLE_STATUSES.IN_SERVICE,
+                status:
+                    route.status !== STATUSES.ACTIVE
+                        ? VEHICLE_STATUSES.IN_SERVICE
+                        : VEHICLE_STATUSES.AVAILABLE,
             });
             res.status(200).json(route);
         } catch (error) {
