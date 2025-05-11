@@ -27,10 +27,12 @@ export const useVehicleStore = defineStore("vehicles", () => {
         page,
         limit,
         search,
+        filteredBy,
     }: {
         page: number;
         limit: number;
         search?: string;
+        filteredBy: number;
     }) => {
         clearError();
         try {
@@ -38,7 +40,7 @@ export const useVehicleStore = defineStore("vehicles", () => {
             if (search) query.append("search", search);
 
             const response = await fetchWithAuthToken<VehiclesResponse>({
-                url: `vehicles/${page}/${limit}${
+                url: `vehicles/${page}/${limit}/${filteredBy}${
                     search ? "?" + query.toString() : ""
                 }`,
             });

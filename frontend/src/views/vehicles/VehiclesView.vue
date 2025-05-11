@@ -32,6 +32,52 @@
                                             >
                                         </v-btn>
                                     </router-link>
+                                    <v-menu
+                                        location="start"
+                                        v-model="menu"
+                                        offset-y
+                                    >
+                                        <template #activator="{ props }">
+                                            <v-btn
+                                                icon="$vuetify"
+                                                variant="flat"
+                                                v-bind="props"
+                                            >
+                                                <v-icon>
+                                                    mdi-dots-vertical
+                                                </v-icon>
+                                            </v-btn>
+                                        </template>
+
+                                        <v-list>
+                                            <v-list-item disabled>
+                                                <v-list-item-content>
+                                                    <v-list-item-title
+                                                        >Ordenar
+                                                        por</v-list-item-title
+                                                    >
+                                                </v-list-item-content>
+                                            </v-list-item>
+
+                                            <v-list-item
+                                                v-for="(
+                                                    item, index
+                                                ) in ItemsFilter"
+                                                :key="index"
+                                                :value="index"
+                                                @click="changeFilter(item.id)"
+                                                class="menu-item"
+                                                v-model="filteredBy"
+                                                :active="filteredBy === item.id"
+                                            >
+                                                <v-list-item-content>
+                                                    <v-list-item-title>{{
+                                                        item.description
+                                                    }}</v-list-item-title>
+                                                </v-list-item-content>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-menu>
                                 </v-col>
                             </v-row>
                         </v-card-title>
@@ -358,6 +404,7 @@ import {
 import axios from "axios";
 import FullScreenOverlay from "../../components/FullScreenOverlay.vue";
 import router from "../../router";
+import { ITEMS_FILTER, ItemsFilter } from "../../constants/filters";
 
 const vehicleStore = useVehicleStore();
 const route = useRoute();
@@ -388,6 +435,8 @@ const showStatuses = ref(false);
 const newStatus = ref<number>(VEHICLE_STATUSES.AVAILABLE);
 const search = ref("");
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+const menu = ref(false);
+const filteredBy = ref<number>(ITEMS_FILTER.NEW.id);
 
 const statusOptions: { id: number; name: string }[] = [
     { id: 1, name: "Finalizado" },
@@ -532,6 +581,11 @@ function changePage(value: number) {
     getVehicles();
 }
 
+function changeFilter(filterId: number) {
+    filteredBy.value = filterId;
+    getVehicles();
+}
+
 async function getVehicles() {
     isLoading.value = true;
 
@@ -540,6 +594,7 @@ async function getVehicles() {
             page: current.value,
             limit: offset.value,
             search: search.value,
+            filteredBy: filteredBy.value,
         });
 
         if (!data) {
@@ -878,7 +933,7 @@ onMounted(() => {
 }
 
 .no-link {
-    text-decoration: none; /* Quita el subrayado del enlace */
-    color: inherit; /* Mantiene el color del texto sin cambiarlo */
+    text-decoration: none;
+    color: inherit;
 }
 </style>

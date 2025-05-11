@@ -7,6 +7,7 @@ import {
 } from "../constants/patterns";
 import { isValidObjectId } from "mongoose";
 import { STATUSES } from "../constants/vehicle";
+import { ITEMS_FILTER } from "../constants/filters";
 
 export const validateRegisterVehicleDriver = (
     req: Request,
@@ -186,6 +187,12 @@ export const validateVehiclePaginationParams = (
             "number.max": "El límite debe ser como máximo 100",
             "any.required": "El parámetro de límite es obligatorio",
         }),
+        filter: Joi.number()
+            .valid(...Object.values(ITEMS_FILTER))
+            .messages({
+                "number.base": "El filtro debe ser un número",
+                "any.only": "El filtro debe ser uno de los valores válidos",
+            }),
     });
 
     const { error } = schema.validate(req.params);

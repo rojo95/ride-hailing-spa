@@ -1,4 +1,4 @@
-import { Schema, Document, model, Types } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import mongooseDelete, { SoftDeleteDocument } from "mongoose-delete";
 import CarModel from "./carModel.model";
 import Driver from "./driver.model";

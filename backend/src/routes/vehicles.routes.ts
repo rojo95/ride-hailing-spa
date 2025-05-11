@@ -12,7 +12,7 @@ import {
 const vehicleRoutes = Router();
 
 vehicleRoutes.get(
-    "/:page/:limit",
+    "/:page/:limit/:filter",
     validateVehiclePaginationParams,
     VehicleController.all
 );

@@ -3,6 +3,7 @@ import Vehicle, { IVehicle } from "../models/vehicle.model";
 import { RegisterVehicleRequest, UpdateVehicleService } from "../types/vehicle";
 import Route from "../models/route.model";
 import logger from "../utils/logger";
+import { ITEMS_FILTER } from "../constants/filters";
 
 export default class VehicleService {
     static async getAllVehicles() {
@@ -84,10 +85,12 @@ export default class VehicleService {
         limit,
         offset,
         search,
+        filterBy,
     }: {
         limit: number;
         offset: number;
         search?: string;
+        filterBy: number;
     }) {
         // Buscar todos los vehículos con populate
         const allVehicles = await Vehicle.find({})
@@ -98,6 +101,16 @@ export default class VehicleService {
             })
             .populate("driver_id")
             .exec();
+
+        const sortFieldMap: Record<number, (v: any) => any> = {
+            1: (v) => v.year?.getFullYear(), // Año
+            2: (v) => v.color,
+            3: (v) => `${v.driver_id?.name} ${v.driver_id?.lastname}`,
+            4: (v) => v.model_id?.brand_id?.name,
+            5: (v) => -v.createdAt.getTime(), // Más nuevo (orden descendente)
+            6: (v) => v.model_id?.name,
+            7: (v) => v.plate,
+        };
 
         // Filtrar en memoria si hay término de búsqueda
         let filteredVehicles = allVehicles;
@@ -123,6 +136,18 @@ export default class VehicleService {
                     .map((val) => val.toString().toLowerCase());
 
                 return valuesToSearch.some((val) => val.includes(lowerSearch));
+            });
+        }
+
+        if (filterBy && sortFieldMap[filterBy]) {
+            filteredVehicles.sort((a, b) => {
+                const aVal = sortFieldMap[filterBy](a) ?? "";
+                const bVal = sortFieldMap[filterBy](b) ?? "";
+
+                if (filterBy === ITEMS_FILTER.NEW) return aVal - bVal;
+                if (filterBy === ITEMS_FILTER.YEAR) return bVal - aVal;
+
+                return aVal.toString().localeCompare(bVal.toString());
             });
         }
 

@@ -12,6 +12,7 @@ import RouteService from "../services/route.service";
 import { STATUSES } from "../constants/vehicle";
 import { STATUSES as ROUTE_STATUSES } from "../constants/routes";
 import logger from "../utils/logger";
+import { ITEMS_FILTER } from "../constants/filters";
 
 type RegisterVehicleDriverRequest = RegisterDriverRequest &
     RegisterVehicleRequest;
@@ -23,6 +24,8 @@ export default class VehicleController {
         try {
             const page = parseInt(req.params.page as string) || 1;
             const limit = parseInt(req.params.limit as string) || 10;
+            const filterBy =
+                parseInt(req.params.filter as string) || ITEMS_FILTER.NEW;
             const offset = (page - 1) * limit;
             const search = req.query.search?.toString() || "";
 
@@ -31,6 +34,7 @@ export default class VehicleController {
                     limit,
                     offset,
                     search,
+                    filterBy,
                 });
 
             res.status(200).json({
