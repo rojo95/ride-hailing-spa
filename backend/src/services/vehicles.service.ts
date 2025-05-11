@@ -2,6 +2,7 @@ import { FilterQuery, Types } from "mongoose";
 import Vehicle, { IVehicle } from "../models/vehicle.model";
 import { RegisterVehicleRequest } from "../types/vehicle";
 import Route from "../models/route.model";
+import logger from "../utils/logger";
 
 export default class VehicleService {
     static async getAllVehicles() {
@@ -126,5 +127,36 @@ export default class VehicleService {
         status: number;
     }) {
         return await Vehicle.findByIdAndUpdate(id, { status }, { new: true });
+    }
+
+    static async softDeleteById({
+        _id,
+        deletedBy,
+    }: {
+        _id: Types.ObjectId;
+        deletedBy: Types.ObjectId;
+    }) {
+        const vehicle = await Vehicle.findByIdAndUpdate(_id, {
+            deletedAt: new Date(),
+            deletedBy,
+        });
+        if (!vehicle) {
+            throw new Error("Vehículo no encontrado");
+        }
+
+        const result = await vehicle.delete();
+        return result;
+    }
+
+    static async softRestoreById(id: Types.ObjectId): Promise<boolean> {
+        try {
+            const result = await Vehicle.updateOne(
+                { _id: id },
+                { $unset: { deletedAt: null, deletedBy: null } }
+            );
+            return result.modifiedCount > 0;
+        } catch (error) {
+            throw new Error("Error al restaurar el vehículo");
+        }
     }
 }

@@ -2,6 +2,7 @@ import { Router } from "express";
 import VehicleController from "../controllers/vehicle.controller";
 import {
     validateRegisterVehicleDriver,
+    validateSoftDeleteVehicle,
     validateVehicleIdParam,
     validateVehiclePaginationParams,
 } from "../validation/vehicleDriverRegister.validation";
@@ -21,5 +22,7 @@ vehicleRoutes.post(
     validateRegisterVehicleDriver,
     VehicleController.create
 );
+
+vehicleRoutes.delete("/", validateSoftDeleteVehicle, VehicleController.delete);
 
 export default vehicleRoutes;

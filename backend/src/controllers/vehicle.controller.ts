@@ -8,6 +8,10 @@ import path from "path";
 import FileService from "../services/file.service";
 import { Types } from "mongoose";
 import { decodeTokenFromRequest } from "../utils/decodeToken";
+import RouteService from "../services/route.service";
+import { STATUSES } from "../constants/vehicle";
+import { STATUSES as ROUTE_STATUSES } from "../constants/routes";
+import logger from "../utils/logger";
 
 type RegisterVehicleDriverRequest = RegisterDriverRequest &
     RegisterVehicleRequest;
@@ -155,6 +159,90 @@ export default class VehicleController {
                     error,
                     defaultMessage:
                         "Error inesperado al crear el vehículo o su conductor",
+                }),
+                fullError: error,
+            });
+        }
+    }
+
+    static async delete(
+        req: Request<{}, {}, { id: Types.ObjectId }>,
+        res: Response
+    ) {
+        const { id: vehicleId } = req.body;
+        const { id: authId } = decodeTokenFromRequest(req);
+
+        if (!authId) throw Error("No se ha obtenido id de usuario");
+
+        let vehicleDeleted = false;
+        let routeStatusChanged = false;
+        let originalRoute: Awaited<
+            ReturnType<typeof RouteService.getLastRouteByVehicleId>
+        > | null = null;
+
+        try {
+            const vehicle = await VehicleService.vehicleById(vehicleId);
+
+            if (!vehicle) throw new Error("Vehículo no encontrado");
+
+            if (vehicle.status === STATUSES.IN_SERVICE) {
+                const route = await RouteService.getLastRouteByVehicleId(
+                    vehicle._id
+                );
+
+                if (route?.status === ROUTE_STATUSES.ACTIVE) {
+                    originalRoute = route;
+
+                    await RouteService.updateStatus({
+                        _id: route._id,
+                        status: ROUTE_STATUSES.CANCELLED,
+                        updatedBy: authId,
+                    });
+
+                    routeStatusChanged = true;
+                }
+            }
+
+            await VehicleService.softDeleteById({
+                _id: vehicle._id,
+                deletedBy: authId,
+            });
+
+            res.status(200).json({
+                message: "Vehículo y conductor eliminados correctamente",
+            });
+        } catch (error) {
+            if (vehicleDeleted) {
+                try {
+                    await VehicleService.softRestoreById(vehicleId);
+                } catch (rollbackError) {
+                    logger.error(
+                        "Fallo al hacer rollback del vehículo:",
+                        rollbackError
+                    );
+                }
+            }
+
+            if (routeStatusChanged && originalRoute) {
+                try {
+                    await RouteService.updateStatus({
+                        _id: originalRoute._id,
+                        status: ROUTE_STATUSES.ACTIVE,
+                        updatedBy: authId,
+                    });
+                } catch (rollbackError) {
+                    logger.error(
+                        "Fallo al hacer rollback de la ruta:",
+                        rollbackError
+                    );
+                }
+            }
+
+            res.status(500).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Error inesperado al eliminar el vehículo o su conductor",
                 }),
                 fullError: error,
             });

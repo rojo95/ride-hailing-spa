@@ -1,10 +1,11 @@
 import { Schema, Document, model, Types } from "mongoose";
+import mongooseDelete, { SoftDeleteDocument } from "mongoose-delete";
 import CarModel from "./carModel.model";
 import Driver from "./driver.model";
 import { IRoute } from "./route.model";
 import User from "./user.model";
 
-export interface IVehicle extends Document {
+export interface IVehicle extends SoftDeleteDocument {
     _id: Types.ObjectId;
     plate: string;
     model_id: Types.ObjectId;
@@ -47,6 +48,7 @@ const vehicleSchema = new Schema<IVehicle>(
             required: false,
             ref: User,
         },
+        deletedBy: { type: Types.ObjectId, ref: "User", default: null },
     },
     {
         timestamps: true,
@@ -54,6 +56,11 @@ const vehicleSchema = new Schema<IVehicle>(
 );
 
 vehicleSchema.index({ createdAt: 1 });
+
+vehicleSchema.plugin(mongooseDelete, {
+    deletedAt: true,
+    overrideMethods: "all",
+});
 
 const Vehicle = model<IVehicle>("Vehicle", vehicleSchema);
 

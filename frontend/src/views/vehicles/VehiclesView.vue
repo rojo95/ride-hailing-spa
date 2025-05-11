@@ -302,7 +302,7 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import { useRouteStore } from "../../stores/routes";
 import Swal from "sweetalert2";
 import type { Location } from "../../types/location";
-import { ShowToast } from "../../utils/notification";
+import { ConfirmAction, ShowToast } from "../../utils/notification";
 import { STATUSES } from "../../constants/routes";
 import { STATUSES as VEHICLE_STATUSES } from "../../constants/vehicle";
 import axios from "axios";
@@ -374,10 +374,8 @@ function getMenuItems(vehicle: Vehicle) {
             },
         },
         {
-            title: "Deshabilitar",
-            action: () => {
-                console.log("Deshabilitar:", vehicle._id);
-            },
+            title: "Eliminar",
+            action: () => deleteVehicle(vehicle),
         },
     ];
 }
@@ -723,6 +721,35 @@ async function updateRoute() {
             }
         })
         .finally(() => (isLoading.value = false));
+}
+
+async function deleteVehicle(vehicle: Vehicle) {
+    if (!vehicle) return;
+
+    try {
+        await ConfirmAction({
+            title: `¿Seguro que desea eliminar el ${
+                vehicle.model_id.brand_id.name + " " + vehicle.model_id.name
+            } con placa ${vehicle.plate}?`,
+            text: `Esta acción no se puede reversar${
+                vehicle.lastRoute?.status === STATUSES.ACTIVE
+                    ? ", la ruta programada se cancelará"
+                    : ""
+            }.`,
+            onConfirm: async () => {
+                const response = await vehicleStore.deleteVehicle(vehicle._id);
+
+                ShowToast({ message: response.message, icon: "success" });
+            },
+        });
+
+        getVehicles();
+    } catch (error) {
+        ShowToast({
+            message: vehicleStore.error,
+            icon: "error",
+        });
+    }
 }
 
 onMounted(() => {

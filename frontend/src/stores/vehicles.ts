@@ -142,6 +142,30 @@ export const useVehicleStore = defineStore("vehicles", () => {
         }
     }
 
+    async function deleteVehicle(id: string) {
+        clearError();
+        try {
+            console.log(id);
+
+            const response = await fetchWithAuthToken<{ message: string }>({
+                url: "vehicles/",
+                method: "DELETE",
+                data: {
+                    id,
+                },
+            });
+
+            return response;
+        } catch (err) {
+            setError(
+                handleAxiosError(err) ||
+                    "Error al obtener los datos del vehículo"
+            );
+            console.error(`${error.value}: "`, err);
+            throw error.value;
+        }
+    }
+
     return {
         error,
         vehicles,
@@ -150,5 +174,6 @@ export const useVehicleStore = defineStore("vehicles", () => {
         fetchCarBrand,
         createVehicle,
         getVehicleById,
+        deleteVehicle,
     };
 });

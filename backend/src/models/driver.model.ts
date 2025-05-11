@@ -1,5 +1,6 @@
 import { model, Schema, Types } from "mongoose";
 import User from "./user.model";
+
 export interface IDriver {
     _id: Types.ObjectId;
     idCard: string;

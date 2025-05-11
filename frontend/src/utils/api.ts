@@ -8,7 +8,7 @@ type ApiResponse<T> = Promise<T>;
 
 type Fetch = {
     url: string;
-    method?: "GET" | "POST" | "PUT";
+    method?: "GET" | "POST" | "PUT" | "DELETE";
     data?: any;
     options?: AxiosRequestConfig;
 };
