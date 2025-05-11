@@ -3,19 +3,17 @@ interface DriverBase {
     idCard: string;
     name: string;
     lastname: string;
-    rating: number | string; // Puede ser string en el formulario, number en la respuesta
-    licenseExpiry: Date | string; // Puede ser string en el formulario, Date en el servidor
+    licenseExpiry: Date | string;
+    email: string;
+    phone: string;
 }
 
-// Driver que viene del servidor (readonly, tipado estricto)
 export interface Driver extends DriverBase {
     _id: string;
     avatar: string;
     createdAt: string;
 }
 
-// Driver usado en el formulario (editable, incluye File)
-export interface DriverForm
-    extends Omit<DriverBase, "rating" /* | "licenseExpiry" */> {
+export interface DriverForm extends DriverBase {
     avatar: File | null;
 }

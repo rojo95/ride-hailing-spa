@@ -1,6 +1,10 @@
 import Joi from "joi";
 import { NextFunction, Request, Response } from "express";
-import { ID_CARD_PATTERN, ONLY_TEXT_PATTERN } from "../constants/patterns";
+import {
+    ID_CARD_PATTERN,
+    MOBILE_NUMBER,
+    ONLY_TEXT_PATTERN,
+} from "../constants/patterns";
 import { isValidObjectId } from "mongoose";
 
 export const validateRegisterVehicleDriver = (
@@ -35,6 +39,20 @@ export const validateRegisterVehicleDriver = (
                 "La fecha de expiración de licencia debe ser una fecha válida",
             "any.required":
                 "Debes ingresar una fecha de expiración de licencia",
+        }),
+        email: Joi.string()
+            .email({ tlds: { allow: false } })
+            .required()
+            .messages({
+                "string.empty": "El correo no puede estar vacío",
+                "string.email": "El correo electrónico no es válido",
+                "any.required": "El correo es un campo obligatorio",
+            }),
+        phone: Joi.string().pattern(MOBILE_NUMBER).required().messages({
+            "string.empty": "El teléfono no puede estar vacío",
+            "string.pattern.base":
+                "El número de teléfono debe contener entre 7 y 15 dígitos y puede iniciar con +",
+            "any.required": "El teléfono es un campo obligatorio",
         }),
         avatar: Joi.any()
             .required()

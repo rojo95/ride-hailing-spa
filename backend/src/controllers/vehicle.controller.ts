@@ -82,6 +82,8 @@ export default class VehicleController {
             color,
             capacity,
             picture,
+            email,
+            phone,
         } = req.body;
 
         let driverId: Types.ObjectId | null = null;
@@ -91,6 +93,14 @@ export default class VehicleController {
 
             if (!authId) throw Error("No se ha obtenido id de usuario");
 
+            const driverExists = await DriverService.findManyByAnyField({
+                email,
+                idCard,
+            });
+
+            if (driverExists.length > 0)
+                throw Error("El conductor ya se encuentra registrado");
+
             const driver = await DriverService.create({
                 idCard,
                 name,
@@ -98,11 +108,20 @@ export default class VehicleController {
                 licenseExpiry,
                 avatar,
                 createdBy: authId,
+                email,
+                phone,
             });
 
             if (!driver._id) throw Error("Error al registrar al conductor");
 
             driverId = driver._id;
+
+            const vehicleExists = await VehicleService.findManyByFields({
+                plate,
+            });
+
+            if (vehicleExists.length > 0)
+                throw Error("El vehículo ya se encuentra registrado");
 
             const vehicle = await VehicleService.create({
                 plate,

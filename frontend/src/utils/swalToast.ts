@@ -20,7 +20,7 @@ export function showToast({
     message,
     icon = "success",
     position = "top-end",
-    timer = 3000,
+    timer = 5000,
 }: ToastOptions) {
     Swal.fire({
         toast: true,

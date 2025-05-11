@@ -1,8 +1,10 @@
 const MIN_LENGTH = 6;
 const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
-const ID_CARD_PATTERN = /^[EV]-\d{8}$/;
+export const ID_CARD_PATTERN = /^[EV]-\d{8}$/;
 export const ONLY_TEXT_PATTERN = /^[a-zA-Z-áéíóúÁÉÍÓÚñÑ\s]+$/;
 const ONLY_NUMBER_PATTERN = /^[0-9]+$/;
+export const PHONE_NUMBER_PATTERN = /^\+?[0-9\s\-()]{7,15}$/;
+export const EMAIL_PATTERN = /.+@.+\..+/;
 
 export type RuleStringValue = string | null;
 
@@ -17,7 +19,7 @@ export const password = [
 
 export const email = [
     (v: RuleStringValue) => inputRequired(v),
-    (v: RuleStringValue) => !v || /.+@.+\..+/.test(v) || "Email no válido.",
+    (v: RuleStringValue) => !v || EMAIL_PATTERN.test(v) || "Email no válido.",
 ] as const;
 
 export const inputRequired = (v: RuleStringValue) => !!v || "Campo requerido.";

@@ -1,12 +1,14 @@
 import { model, Schema, Types } from "mongoose";
 import User from "./user.model";
-export interface IDriver extends Document {
+export interface IDriver {
     _id: Types.ObjectId;
     idCard: string;
     name: string;
     lastname: string;
     avatar: string;
     licenseExpiry: Date;
+    email: string;
+    phone: string;
     createdBy: Types.ObjectId;
     updatedBy?: Types.ObjectId;
 }
@@ -22,6 +24,8 @@ const DriverSchema = new Schema<IDriverDocument>(
         lastname: { type: String, required: true },
         avatar: { type: String, required: true },
         licenseExpiry: { type: Date, required: true },
+        email: { type: String, required: true },
+        phone: { type: String, required: true },
         createdBy: {
             type: Schema.Types.ObjectId,
             required: true,

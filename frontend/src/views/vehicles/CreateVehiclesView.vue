@@ -113,6 +113,32 @@
                                     />
                                 </div>
 
+                                <v-text-field
+                                    prepend-icon="mdi-email"
+                                    v-model="formDriver.email"
+                                    label="Correo electrónico"
+                                    type="email"
+                                    required
+                                    :rules="formRules.email"
+                                    variant="outlined"
+                                    class="mb-4"
+                                    @input="
+                                        formDriver.email =
+                                            formDriver.email.toLowerCase()
+                                    "
+                                />
+
+                                <v-text-field
+                                    prepend-icon="mdi-phone"
+                                    v-model="formDriver.phone"
+                                    label="Teléfono"
+                                    type="tel"
+                                    required
+                                    :rules="formRules.phone"
+                                    variant="outlined"
+                                    class="mb-4"
+                                />
+
                                 <v-date-input
                                     label="Fecha de Expiración de Licencia"
                                     variant="outlined"
@@ -127,7 +153,6 @@
                                 />
                             </div>
                         </div>
-
                         <v-btn
                             type="submit"
                             color="primary"
@@ -177,7 +202,7 @@
                                         (file) =>
                                             updateImage({
                                                 file,
-                                                field: 'ºvehicle',
+                                                field: 'vehicle',
                                             })
                                     "
                                 />
@@ -289,6 +314,7 @@
 
 <script setup lang="ts">
 import {
+    email,
     idCard,
     inputRequired,
     maxValue,
@@ -296,6 +322,7 @@ import {
     ONLY_TEXT_PATTERN,
     onlyNumber,
     onlyText,
+    PHONE_NUMBER_PATTERN,
     type RuleStringValue,
 } from "../../constants/formRules";
 import { computed, onMounted, reactive, ref } from "vue";
@@ -345,6 +372,8 @@ const isFormValid = computed(() => {
         formDriver.idCard !== "" &&
         formDriver.name !== "" &&
         formDriver.lastname !== "" &&
+        formDriver.email !== "" &&
+        formDriver.phone !== "" &&
         licenseDate >= todayString
     );
 });
@@ -372,6 +401,8 @@ const formDriver = reactive<DriverForm>({
     lastname: "",
     avatar: null,
     licenseExpiry: "",
+    email: "",
+    phone: "",
 });
 
 const formVehicle = reactive<VehicleForm>({
@@ -396,6 +427,14 @@ const formRules = {
         onlyNumber,
         (v: RuleStringValue) => minValue(v, 2),
         (v: RuleStringValue) => maxValue(v, 9),
+    ],
+    email: email,
+    phone: [
+        inputRequired,
+        (v: RuleStringValue) =>
+            !v ||
+            PHONE_NUMBER_PATTERN.test(v) ||
+            "Número de teléfono no válido",
     ],
 };
 
@@ -504,8 +543,11 @@ async function registerVehicle() {
                         query: { msg: "Vehículo registrado de manera exitosa" },
                     });
             } catch (err) {
-                error.value =
-                    vehicleStore.error || "Error al registrar vehículo.";
+                showToast({
+                    message:
+                        vehicleStore.error || "Error al registrar vehículo.",
+                    icon: "error",
+                });
             }
         }
     });

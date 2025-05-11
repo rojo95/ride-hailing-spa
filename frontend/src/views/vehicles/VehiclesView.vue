@@ -18,7 +18,7 @@
                             </router-link>
                         </v-card-title>
 
-                        <v-list>
+                        <v-list v-if="vehicles.length > 0">
                             <v-list-group
                                 v-for="item in vehicles"
                                 :key="item._id"
@@ -151,10 +151,26 @@
                                 </v-list-item-group>
                             </v-list-group>
                         </v-list>
+                        <router-link
+                            to="/vehicles/create"
+                            class="no-link pa-10 text-grey"
+                            v-else
+                        >
+                            <div class="text-center">
+                                <v-icon
+                                    size="200"
+                                    icon="mdi-car-off"
+                                    color="grey"
+                                />
+                                <h3 class="">
+                                    Click para Registrar un Nuevo Vehículo
+                                </h3>
+                            </div>
+                        </router-link>
                     </v-card>
                 </v-col>
             </v-row>
-            <v-row>
+            <v-row v-if="vehicles.length > 0">
                 <v-col cols="12" md="6">
                     <v-pagination
                         :length="pages"
@@ -163,7 +179,7 @@
                 </v-col>
                 <v-col
                     cols="12"
-                 md="6"
+                    md="6"
                     class="d-flex justify-end items-center mx-auto h-100"
                 >
                     Total: {{ total }}
@@ -706,5 +722,10 @@ onMounted(() => {
 .leaflet-map {
     height: 300px;
     width: 100%;
+}
+
+.no-link {
+    text-decoration: none; /* Quita el subrayado del enlace */
+    color: inherit; /* Mantiene el color del texto sin cambiarlo */
 }
 </style>

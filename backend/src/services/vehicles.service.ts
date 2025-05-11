@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import Vehicle, { IVehicle } from "../models/vehicle.model";
 import { RegisterVehicleRequest } from "../types/vehicle";
 import Route from "../models/route.model";
@@ -46,6 +46,13 @@ export default class VehicleService {
         await vehicle.save();
 
         return vehicle.toObject();
+    }
+
+    static async findManyByFields(
+        fields: FilterQuery<IVehicle>
+    ): Promise<IVehicle[]> {
+        const drivers = await Vehicle.find(fields);
+        return drivers.map((vehicle) => vehicle.toObject());
     }
 
     static async vehicleById(
