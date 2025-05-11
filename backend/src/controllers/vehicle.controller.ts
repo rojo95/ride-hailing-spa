@@ -286,8 +286,6 @@ export default class VehicleController {
                 throw new Error("Vehículo o conductor no encontrado");
             }
 
-            logger.debug("llegamos");
-
             // Actualizar conductor
             const driver = await DriverService.update(vehicle.driver_id._id, {
                 idCard,
@@ -326,6 +324,42 @@ export default class VehicleController {
                     error,
                     defaultMessage:
                         "Error inesperado al actualizar vehículo y conductor",
+                }),
+                fullError: error,
+            });
+        }
+    }
+
+    static async updateStatus(
+        req: Request<{ id: string }, {}, { status: number }>,
+        res: Response
+    ) {
+        try {
+            const { id } = req.params;
+            const vehicleId = new Types.ObjectId(id);
+            const { status } = req.body;
+            const { id: authId } = decodeTokenFromRequest(req);
+
+            if (!authId) throw Error("No se ha obtenido id de usuario");
+
+            const vehicle = await VehicleService.vehicleById(vehicleId);
+            if (!vehicle) {
+                throw new Error("Vehículo no encontrado");
+            }
+
+            const updated = await VehicleService.updateStatus({
+                id: vehicleId,
+                status: status,
+                updatedBy: authId,
+            });
+
+            res.status(200).json(updated);
+        } catch (error) {
+            res.status(500).json({
+                error: handleErrorMessage({
+                    error,
+                    defaultMessage:
+                        "Error inesperado al actualizar estado del vehículo",
                 }),
                 fullError: error,
             });

@@ -122,11 +122,17 @@ export default class VehicleService {
     static async updateStatus({
         id,
         status,
+        updatedBy,
     }: {
         id: Types.ObjectId;
         status: number;
+        updatedBy: Types.ObjectId;
     }) {
-        return await Vehicle.findByIdAndUpdate(id, { status }, { new: true });
+        return await Vehicle.findByIdAndUpdate(
+            id,
+            { status, updatedBy },
+            { new: true }
+        );
     }
 
     static async softDeleteById({

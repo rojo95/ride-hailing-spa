@@ -196,8 +196,38 @@
         </v-container>
     </div>
 
-    <v-dialog v-model="isActiveModal" max-width="800">
-        <template v-slot:default>
+    <v-dialog v-model="isActiveModal" max-width="700">
+        <template v-if="showStatuses">
+            <v-row justify="center" align-content="center">
+                <v-col>
+                    <v-card>
+                        <v-card-title>
+                            Cambiar Estado del Vehículo
+                        </v-card-title>
+                        <v-card-text>
+                            <v-autocomplete
+                                label="Estado inicial del vehículo"
+                                variant="outlined"
+                                v-model="newStatus"
+                                :items="carStatuses"
+                                item-title="description"
+                                item-value="id"
+                                :return-object="false"
+                                prepend-icon="mdi-room-service-outline"
+                            />
+                            <v-btn
+                                type="submit"
+                                color="green"
+                                @click="updateStatus"
+                            >
+                                Cambiar Estado
+                            </v-btn>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </template>
+        <template v-else>
             <v-card>
                 <v-card-title>
                     {{ modalTitle }}
@@ -303,7 +333,10 @@ import { useRouteStore } from "../../stores/routes";
 import type { Location } from "../../types/location";
 import { ConfirmAction, ShowToast } from "../../utils/notification";
 import { STATUSES } from "../../constants/routes";
-import { STATUSES as VEHICLE_STATUSES } from "../../constants/vehicle";
+import {
+    carStatuses,
+    STATUSES as VEHICLE_STATUSES,
+} from "../../constants/vehicle";
 import axios from "axios";
 import FullScreenOverlay from "../../components/FullScreenOverlay.vue";
 import router from "../../router";
@@ -333,6 +366,8 @@ const current = ref(1);
 const offset = ref(5);
 const pages = ref(0);
 const total = ref(0);
+const showStatuses = ref(false);
+const newStatus = ref<number>(VEHICLE_STATUSES.AVAILABLE);
 
 const statusOptions: { id: number; name: string }[] = [
     { id: 1, name: "Finalizado" },
@@ -359,6 +394,10 @@ function getMenuItems(vehicle: Vehicle) {
               ]
             : []),
         {
+            title: "Cambiar estado",
+            action: () => openEditStatusModal(vehicle),
+        },
+        {
             title: "Ver Más",
             action: () =>
                 router.push({
@@ -379,6 +418,55 @@ function getMenuItems(vehicle: Vehicle) {
             action: () => deleteVehicle(vehicle),
         },
     ];
+}
+
+function openEditStatusModal(item: Vehicle) {
+    isActiveModal.value = true;
+    activeVehicle.value = item._id;
+    showStatuses.value = true;
+    newStatus.value = item.status;
+}
+
+async function updateStatus() {
+    const vehicle = vehicles.value.find((v) => v._id === activeVehicle.value);
+    const actVehicle = activeVehicle.value;
+
+    if (!vehicle || !actVehicle || vehicle.status === newStatus.value) return;
+
+    isActiveModal.value = false;
+
+    try {
+        await ConfirmAction({
+            title: "¿Desea cambiar el estado?",
+            onConfirm: async () => {
+                isLoading.value = true;
+
+                const updated = await vehicleStore.updateStatus(
+                    actVehicle,
+                    newStatus.value
+                );
+                vehicle.status = updated.status;
+
+                ShowToast({
+                    message: "Estado actualizado correctamente.",
+                    icon: "success",
+                });
+                activeVehicle.value = null;
+            },
+            onCancel: () => {
+                isActiveModal.value = true;
+                isLoading.value = false;
+                newStatus.value = vehicle.status;
+            },
+        });
+    } catch (error) {
+        ShowToast({
+            message: vehicleStore.error,
+            icon: "error",
+        });
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 const getStatus = (status: number) => {
@@ -442,6 +530,7 @@ async function getVehicles() {
 
 async function openModal(vehicle: Vehicle) {
     isLoading.value = true;
+    isActiveModal.value = false;
 
     newStatusRoute.value = null;
     const { lastRoute } = vehicle;

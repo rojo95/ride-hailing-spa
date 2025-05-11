@@ -84,6 +84,7 @@ export default class RouteController {
                     route.status !== STATUSES.ACTIVE
                         ? VEHICLE_STATUSES.IN_SERVICE
                         : VEHICLE_STATUSES.AVAILABLE,
+                updatedBy: authId,
             });
             res.status(200).json(route);
         } catch (error) {

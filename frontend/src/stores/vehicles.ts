@@ -218,13 +218,36 @@ export const useVehicleStore = defineStore("vehicles", () => {
     async function deleteVehicle(id: string) {
         clearError();
         try {
-            console.log(id);
-
             const response = await fetchWithAuthToken<{ message: string }>({
                 url: "vehicles/",
                 method: "DELETE",
                 data: {
                     id,
+                },
+            });
+
+            return response;
+        } catch (err) {
+            setError(
+                handleAxiosError(err) ||
+                    "Error al obtener los datos del vehículo"
+            );
+            console.error(`${error.value}: "`, err);
+            throw error.value;
+        }
+    }
+
+    async function updateStatus(
+        idVehicle: string,
+        newStatus: number
+    ): Promise<Vehicle> {
+        clearError();
+        try {
+            const response = await fetchWithAuthToken<Vehicle>({
+                url: "vehicles/status/" + idVehicle,
+                method: "PUT",
+                data: {
+                    status: newStatus,
                 },
             });
 
@@ -249,5 +272,6 @@ export const useVehicleStore = defineStore("vehicles", () => {
         getVehicleById,
         deleteVehicle,
         updateVehicle,
+        updateStatus,
     };
 });

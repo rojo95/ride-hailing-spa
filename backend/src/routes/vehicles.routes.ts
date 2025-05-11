@@ -3,6 +3,8 @@ import VehicleController from "../controllers/vehicle.controller";
 import {
     validateRegisterVehicleDriver,
     validateSoftDeleteVehicle,
+    validateUpdateVehicleDriver,
+    validateUpdateVehicleStatus,
     validateVehicleIdParam,
     validateVehiclePaginationParams,
 } from "../validation/vehicleDriverRegister.validation";
@@ -17,7 +19,19 @@ vehicleRoutes.get(
 
 vehicleRoutes.get("/:id", validateVehicleIdParam, VehicleController.byId);
 
-vehicleRoutes.put("/:id", validateVehicleIdParam, VehicleController.update);
+vehicleRoutes.put(
+    "/:id",
+    validateVehicleIdParam,
+    validateUpdateVehicleDriver,
+    VehicleController.update
+);
+
+vehicleRoutes.put(
+    "/status/:id",
+    validateVehicleIdParam,
+    validateUpdateVehicleStatus,
+    VehicleController.updateStatus
+);
 
 vehicleRoutes.post(
     "/",
