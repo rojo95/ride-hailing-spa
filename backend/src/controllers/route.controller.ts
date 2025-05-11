@@ -54,9 +54,9 @@ export default class RouteController {
                 vehicle._id
             );
 
-            if (currentRoute?.status === STATUSES.ACTIVE) {
+            if (currentRoute?.status === STATUSES.ACTIVE || !vehicle.status) {
                 throw Error(
-                    "No se puede crear nueva ruta ya que hay una activa"
+                    "El vehículo no se encuentra disponible para asignarle una nueva ruta"
                 );
             }
 
@@ -96,7 +96,17 @@ export default class RouteController {
 
             const route = await RouteService.getById(_id);
 
-            if (!route) throw Error("La ruta no existe");
+            if (!route || route?.status !== STATUSES.ACTIVE)
+                throw Error("No existe una ruta valida");
+
+            const vehicle = await VehicleService.vehicleById(route.vehicle_id);
+            if (!vehicle) throw Error("Vehículo no encontrado");
+
+            if (!vehicle.status) {
+                throw Error(
+                    "El vehículo no se encuentra disponible para asignarle una nueva ruta"
+                );
+            }
 
             const updated = await RouteService.updateStatus({
                 _id: route._id,

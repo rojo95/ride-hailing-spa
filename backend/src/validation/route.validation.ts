@@ -31,10 +31,12 @@ export const validateCreateRoute = (
             "any.required": "El destino es obligatorio",
         }),
         from_address: Joi.string().required().messages({
+            "string.empty": "La dirección de origen no debe estar vacía",
             "string.base": "La dirección de origen debe ser un texto",
             "any.required": "La dirección de origen es obligatoria",
         }),
         to_address: Joi.string().required().messages({
+            "string.empty": "La dirección de destino no puede estar vacía",
             "string.base": "La dirección de destino debe ser un texto",
             "any.required": "La dirección de destino es obligatoria",
         }),
