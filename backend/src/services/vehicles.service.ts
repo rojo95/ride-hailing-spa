@@ -23,6 +23,7 @@ export default class VehicleService {
         color,
         capacity,
         picture,
+        status,
         driver_id,
         createdBy,
     }: RegisterVehicleRequest): Promise<IVehicle> {
@@ -39,6 +40,7 @@ export default class VehicleService {
             color,
             capacity,
             picture,
+            status,
             driver_id,
             createdBy,
         });
@@ -114,5 +116,15 @@ export default class VehicleService {
             vehicles: results,
             total,
         };
+    }
+
+    static async updateStatus({
+        id,
+        status,
+    }: {
+        id: Types.ObjectId;
+        status: number;
+    }) {
+        return await Vehicle.findByIdAndUpdate(id, { status }, { new: true });
     }
 }

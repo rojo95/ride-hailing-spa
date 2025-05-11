@@ -67,14 +67,21 @@
                                                             new Date(
                                                                 item.year
                                                             ).getFullYear()
-                                                        }})</v-list-item-subtitle
-                                                    >
+                                                        }}) -
+                                                        {{
+                                                            getStatus(
+                                                                item.status
+                                                            ).description
+                                                        }}
+                                                    </v-list-item-subtitle>
                                                 </div>
                                             </v-list-item-content>
 
                                             <div
                                                 class="rounded-circle me-3"
-                                                :class="getStatus(item).color"
+                                                :class="
+                                                    getStatus(item.status).color
+                                                "
                                                 style="
                                                     width: 10px;
                                                     height: 10px;
@@ -100,7 +107,8 @@
                                                 }}<br />
                                                 Estado:
                                                 {{
-                                                    getStatus(item).description
+                                                    getStatus(item.status)
+                                                        .description
                                                 }}
                                                 <br />
 
@@ -294,8 +302,9 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import { useRouteStore } from "../../stores/routes";
 import Swal from "sweetalert2";
 import type { Location } from "../../types/location";
-import { showToast } from "../../utils/swalToast";
+import { ShowToast } from "../../utils/notification";
 import { STATUSES } from "../../constants/routes";
+import { STATUSES as VEHICLE_STATUSES } from "../../constants/vehicle";
 import axios from "axios";
 import FullScreenOverlay from "../../components/FullScreenOverlay.vue";
 import router from "../../router";
@@ -342,7 +351,7 @@ const modalTitle = computed(() => {
 
 function getMenuItems(vehicle: Vehicle) {
     return [
-        ...(vehicle.status
+        ...(vehicle.status !== VEHICLE_STATUSES.MAINTENANCE
             ? [
                   {
                       title: "Gestionar Ruta",
@@ -373,14 +382,17 @@ function getMenuItems(vehicle: Vehicle) {
     ];
 }
 
-const getStatus = ({ lastRoute, status }: Vehicle) => {
-    if (!status) {
-        return { description: "En Mantenimiento", color: "bg-grey" };
+const getStatus = (status: number) => {
+    switch (status) {
+        case VEHICLE_STATUSES.MAINTENANCE:
+            return { description: "En Mantenimiento", color: "bg-grey" };
+
+        case VEHICLE_STATUSES.IN_SERVICE:
+            return { description: "En Servicio", color: "bg-red" };
+
+        default:
+            return { description: "Disponible", color: "bg-green" };
     }
-    if (lastRoute?.status === STATUSES.ACTIVE) {
-        return { description: "En Servicio", color: "bg-red" };
-    }
-    return { description: "Disponible", color: "bg-green" };
 };
 
 async function getAddressFromLatLng(lat: number, lon: number): Promise<string> {
@@ -411,7 +423,7 @@ async function getVehicles() {
         });
 
         if (!data) {
-            showToast({
+            ShowToast({
                 message: "No se encontraron vehículos.",
                 icon: "error",
             });
@@ -422,7 +434,7 @@ async function getVehicles() {
         pages.value = pagination.totalPages;
         total.value = pagination.total;
     } catch (error) {
-        showToast({ message: vehicleStore.error, icon: "error" });
+        ShowToast({ message: vehicleStore.error, icon: "error" });
         console.error("Error al obtener usuarios:", error);
     } finally {
         isLoading.value = false;
@@ -629,16 +641,18 @@ async function createRoute() {
                     );
 
                     if (vehicle) {
+                        vehicle.status = VEHICLE_STATUSES.IN_SERVICE;
                         vehicle.lastRoute = route;
                     }
 
                     activeVehicle.value = null;
-                    showToast({
-                        message: "Ruta asignada de manera exitosa.",
+                    ShowToast({
+                        message:
+                            'Ruta asignada de manera exitosa, estatus del conductor cambiado a "En Servicio".',
                         icon: "success",
                     });
                 } catch (err) {
-                    showToast({
+                    ShowToast({
                         message:
                             routeStore.error || "Error al registrar vehículo.",
                         icon: "error",
@@ -693,12 +707,12 @@ async function updateRoute() {
                     activeVehicle.value = null;
                     newStatusRoute.value = null;
 
-                    showToast({
+                    ShowToast({
                         message: "Estado actualizado correctamente.",
                         icon: "success",
                     });
                 } catch (err) {
-                    showToast({
+                    ShowToast({
                         message:
                             routeStore.error || "Error Actualizando el estado",
                         icon: "error",
@@ -716,7 +730,7 @@ onMounted(() => {
     getCurrentLocation();
 
     if (typeof message === "string") {
-        showToast({ message, icon: "success" });
+        ShowToast({ message, icon: "success" });
     }
 });
 </script>

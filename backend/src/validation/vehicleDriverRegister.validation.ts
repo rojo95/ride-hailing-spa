@@ -6,6 +6,7 @@ import {
     ONLY_TEXT_PATTERN,
 } from "../constants/patterns";
 import { isValidObjectId } from "mongoose";
+import { STATUSES } from "../constants/vehicle";
 
 export const validateRegisterVehicleDriver = (
     req: Request,
@@ -118,6 +119,14 @@ export const validateRegisterVehicleDriver = (
             .messages({
                 "any.empty": "La foto del auto no puede estar vacía",
                 "any.required": "La foto del auto es obligatoria",
+            }),
+        status: Joi.number()
+            .required()
+            .valid(...Object.values(STATUSES))
+            .messages({
+                "number.base": "El estado del vehículo debe ser un número",
+                "any.required": "El estado del vehículo es obligatorio",
+                "any.only": `El estado del vehículo debe ser uno de los valores válidos`,
             }),
     });
     const { error } = schema.validate(req.body);

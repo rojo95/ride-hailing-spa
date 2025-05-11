@@ -79,7 +79,7 @@ import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import router from "../router";
 import { email, inputRequired, password } from "../constants/formRules";
-import { showToast } from "../utils/swalToast";
+import { ShowToast } from "../utils/notification";
 
 const auth = useAuthStore();
 const error = ref("");
@@ -103,7 +103,7 @@ const fetchSecretQuestion = async () => {
         if (!question) {
             error.value =
                 "Error al obtener la pregunta secreta. Por favor, verifica tu correo.";
-            showToast({ message: error.value, icon: "error" });
+            ShowToast({ message: error.value, icon: "error" });
             return;
         }
 
@@ -112,7 +112,7 @@ const fetchSecretQuestion = async () => {
     } catch (err) {
         console.error("Error obteniendo la pregunta secreta", err);
         error.value = "Error al obtener la pregunta secreta.";
-        showToast({ message: error.value, icon: "error" });
+        ShowToast({ message: error.value, icon: "error" });
     }
 };
 
@@ -129,11 +129,11 @@ const submitSecretAnswer = async () => {
 
         error.value =
             "Error al modificar la contraseña, verifica tu respuesta.";
-        showToast({ message: error.value, icon: "error" });
+        ShowToast({ message: error.value, icon: "error" });
     } catch (err) {
         console.error("Respuesta incorrecta o error en la verificación", err);
         error.value = auth.error || "Error al modificar la contraseña.";
-        showToast({ message: error.value, icon: "error" });
+        ShowToast({ message: error.value, icon: "error" });
     }
 };
 </script>

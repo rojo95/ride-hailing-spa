@@ -43,8 +43,7 @@ export const validateCreateRoute = (
         status: Joi.number().required().valid(0, 1, 2, 3).messages({
             "number.base": "El estado debe ser un número",
             "any.required": "El estado es obligatorio",
-            "any.only":
-                "El estado debe ser uno de los valores válidos: 0, 1, 2 o 3",
+            "any.only": "El estado debe ser uno de los valores válidos",
         }),
         vehicle_id: Joi.any()
             .required()

@@ -329,7 +329,7 @@ import { onMounted, ref } from "vue";
 import FullScreenOverlay from "../../components/FullScreenOverlay.vue";
 import { useVehicleStore } from "../../stores/vehicles";
 import { useRoute } from "vue-router";
-import { showToast } from "../../utils/swalToast";
+import { ShowToast } from "../../utils/notification";
 import type { Vehicle } from "../../types/vehicle";
 import { calculateTime, formatDate } from "../../utils/date";
 import { useRouter } from "vue-router";
@@ -367,7 +367,7 @@ async function getVehicle() {
 
         vehicle.value = v;
     } catch (error) {
-        showToast({ message: vehicleStore.error, icon: "error" });
+        ShowToast({ message: vehicleStore.error, icon: "error" });
     } finally {
         isLoading.value = false;
     }

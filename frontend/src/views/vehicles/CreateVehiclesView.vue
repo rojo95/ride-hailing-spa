@@ -1,314 +1,389 @@
 <template>
-    <div class="pa-10 d-flex justify-center">
-        <v-stepper
-            v-model="step"
-            :items="['Conductor', 'Vehículo']"
-            hide-actions
-            :width="800"
-        >
-            <template v-slot:item.1>
-                <v-card class="ma-auto pa-5">
-                    <v-card-title> Conductor </v-card-title>
-                    <v-form ref="driverForm" @submit.prevent="concreteDriver">
-                        <div class="d-md-flex g-4 mb-4 px-auto align-center">
-                            <div class="d-flex justify-center">
-                                <label for="file">
-                                    <v-avatar
-                                        size="300"
-                                        class="mr-md-2 mx-auto rounded-lg my-10 bg-grey-lighten-2"
-                                    >
-                                        <v-img
-                                            :src="avatarUrl"
-                                            alt="Avatar"
-                                            width="100%"
-                                            height="100%"
-                                            cover
-                                            v-if="avatarUrl"
-                                        />
-                                        <v-img
-                                            v-else
-                                            alt="Avatar"
-                                            width="100%"
-                                            height="100%"
-                                            cover
-                                            src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
-                                        />
-                                    </v-avatar>
-                                </label>
-                            </div>
-                            <div class="w-100 ps-5 form">
-                                <v-file-input
-                                    id="file"
-                                    label="Foto"
-                                    variant="outlined"
-                                    required
-                                    accept="image/*"
-                                    :model-value="formDriver.avatar"
-                                    @update:model-value="
-                                        (file) =>
-                                            updateImage({
-                                                file,
-                                                field: 'avatar',
-                                            })
-                                    "
+    <div class="py-3 py-md-10 px-md-10">
+        <v-container>
+            <v-row justify="center">
+                <v-col cols="12" md="10">
+                    <v-stepper
+                        v-model="step"
+                        :items="['Conductor', 'Vehículo']"
+                        hide-actions
+                    >
+                        <template v-slot:item.1>
+                            <v-card class="ma-auto pa-5">
+                                <v-card-title> Conductor </v-card-title>
+                                <v-form
+                                    ref="driverForm"
+                                    @submit.prevent="concreteDriver"
                                 >
-                                    <template #selection="{ fileNames }">
-                                        <span
-                                            class="text-truncate d-inline-block"
-                                            style="
-                                                max-width: 100%;
-                                                overflow: hidden;
-                                                text-overflow: ellipsis;
-                                                white-space: nowrap;
-                                            "
-                                        >
-                                            {{ fileNames[0] }}
-                                        </span>
-                                    </template>
-                                </v-file-input>
-                                <v-text-field
-                                    prepend-icon="mdi-card-account-details-outline"
-                                    v-model="formDriver.idCard"
-                                    label="Cédula"
-                                    type="text"
-                                    required
-                                    :rules="formRules.idCard"
-                                    variant="outlined"
-                                    class="mb-4"
-                                    @input="
-                                        formDriver.idCard =
-                                            formDriver.idCard.toUpperCase()
-                                    "
-                                />
-                                <div class="d-flex flex-wrap ga-4">
-                                    <v-text-field
-                                        prepend-icon="mdi-account"
-                                        v-model="formDriver.name"
-                                        label="Nombre"
-                                        type="text"
-                                        required
-                                        :rules="formRules.name"
-                                        variant="outlined"
-                                        class="mb-4"
-                                        @input="
-                                            formDriver.name = capitalizeWords(
-                                                formDriver.name
-                                            )
-                                        "
-                                    />
-                                    <v-text-field
-                                        v-model="formDriver.lastname"
-                                        label="Apellido"
-                                        type="text"
-                                        required
-                                        :rules="formRules.lastname"
-                                        variant="outlined"
-                                        class="mb-4"
-                                        @input="
-                                            formDriver.lastname =
-                                                capitalizeWords(
-                                                    formDriver.lastname
-                                                )
-                                        "
-                                    />
-                                </div>
+                                    <v-container>
+                                        <v-row>
+                                            <v-col
+                                                cols="12"
+                                                md="6"
+                                                align-self="center"
+                                            >
+                                                <label for="file">
+                                                    <v-avatar
+                                                        size="300"
+                                                        class="mr-md-2 mx-auto rounded-lg my-10 bg-grey-lighten-2"
+                                                    >
+                                                        <v-img
+                                                            :src="avatarUrl"
+                                                            alt="Avatar"
+                                                            width="100%"
+                                                            height="100%"
+                                                            cover
+                                                            v-if="avatarUrl"
+                                                        />
+                                                        <v-img
+                                                            v-else
+                                                            alt="Avatar"
+                                                            width="100%"
+                                                            height="100%"
+                                                            cover
+                                                            src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
+                                                        />
+                                                    </v-avatar>
+                                                </label>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-file-input
+                                                    id="file"
+                                                    label="Foto"
+                                                    variant="outlined"
+                                                    required
+                                                    accept="image/*"
+                                                    :model-value="
+                                                        formDriver.avatar
+                                                    "
+                                                    @update:model-value="
+                                                        (file) =>
+                                                            updateImage({
+                                                                file,
+                                                                field: 'avatar',
+                                                            })
+                                                    "
+                                                >
+                                                    <template
+                                                        #selection="{
+                                                            fileNames,
+                                                        }"
+                                                    >
+                                                        <span
+                                                            class="text-truncate d-inline-block"
+                                                            style="
+                                                                max-width: 100%;
+                                                                overflow: hidden;
+                                                                text-overflow: ellipsis;
+                                                                white-space: nowrap;
+                                                            "
+                                                        >
+                                                            {{ fileNames[0] }}
+                                                        </span>
+                                                    </template>
+                                                </v-file-input>
+                                                <v-text-field
+                                                    prepend-icon="mdi-card-account-details-outline"
+                                                    v-model="formDriver.idCard"
+                                                    label="Cédula"
+                                                    type="text"
+                                                    required
+                                                    :rules="formRules.idCard"
+                                                    variant="outlined"
+                                                    class="mb-4"
+                                                    @input="
+                                                        formDriver.idCard =
+                                                            formDriver.idCard.toUpperCase()
+                                                    "
+                                                />
+                                                <v-row>
+                                                    <v-col cols="6">
+                                                        <v-text-field
+                                                            prepend-icon="mdi-account"
+                                                            v-model="
+                                                                formDriver.name
+                                                            "
+                                                            label="Nombre"
+                                                            type="text"
+                                                            required
+                                                            :rules="
+                                                                formRules.name
+                                                            "
+                                                            variant="outlined"
+                                                            class="mb-4"
+                                                            @input="
+                                                                formDriver.name =
+                                                                    capitalizeWords(
+                                                                        formDriver.name
+                                                                    )
+                                                            "
+                                                        />
+                                                    </v-col>
+                                                    <v-col cols="6">
+                                                        <v-text-field
+                                                            v-model="
+                                                                formDriver.lastname
+                                                            "
+                                                            label="Apellido"
+                                                            type="text"
+                                                            required
+                                                            :rules="
+                                                                formRules.lastname
+                                                            "
+                                                            variant="outlined"
+                                                            class="mb-4"
+                                                            @input="
+                                                                formDriver.lastname =
+                                                                    capitalizeWords(
+                                                                        formDriver.lastname
+                                                                    )
+                                                            "
+                                                        />
+                                                    </v-col>
+                                                </v-row>
 
-                                <v-text-field
-                                    prepend-icon="mdi-email"
-                                    v-model="formDriver.email"
-                                    label="Correo electrónico"
-                                    type="email"
-                                    required
-                                    :rules="formRules.email"
-                                    variant="outlined"
-                                    class="mb-4"
-                                    @input="
-                                        formDriver.email =
-                                            formDriver.email.toLowerCase()
-                                    "
-                                />
+                                                <v-text-field
+                                                    prepend-icon="mdi-email"
+                                                    v-model="formDriver.email"
+                                                    label="Correo electrónico"
+                                                    type="email"
+                                                    required
+                                                    :rules="formRules.email"
+                                                    variant="outlined"
+                                                    class="mb-4"
+                                                    @input="
+                                                        formDriver.email =
+                                                            formDriver.email.toLowerCase()
+                                                    "
+                                                />
 
-                                <v-text-field
-                                    prepend-icon="mdi-phone"
-                                    v-model="formDriver.phone"
-                                    label="Teléfono"
-                                    type="tel"
-                                    required
-                                    :rules="formRules.phone"
-                                    variant="outlined"
-                                    class="mb-4"
-                                />
+                                                <v-text-field
+                                                    prepend-icon="mdi-phone"
+                                                    v-model="formDriver.phone"
+                                                    label="Teléfono"
+                                                    type="tel"
+                                                    required
+                                                    :rules="formRules.phone"
+                                                    variant="outlined"
+                                                    class="mb-4"
+                                                />
 
-                                <v-date-input
-                                    label="Fecha de Expiración de Licencia"
-                                    variant="outlined"
-                                    v-model="formDriver.licenseExpiry"
-                                    required
-                                    :rules="formRules.licenseExpiry"
-                                    class="mb-4"
-                                    :min="todayString"
-                                    append-inner-icon="mdi-user"
-                                    :display-format="displayFormat"
-                                    placeholder=""
-                                />
-                            </div>
-                        </div>
-                        <v-btn
-                            type="submit"
-                            color="primary"
-                            :disabled="!isFormValid"
-                        >
-                            Siguiente
-                        </v-btn>
-                    </v-form>
-                </v-card>
-            </template>
+                                                <v-date-input
+                                                    label="Fecha de Expiración de Licencia"
+                                                    variant="outlined"
+                                                    v-model="
+                                                        formDriver.licenseExpiry
+                                                    "
+                                                    required
+                                                    :rules="
+                                                        formRules.licenseExpiry
+                                                    "
+                                                    class="mb-4"
+                                                    :min="todayString"
+                                                    append-inner-icon="mdi-user"
+                                                    :display-format="
+                                                        displayFormat
+                                                    "
+                                                    placeholder=""
+                                                />
+                                            </v-col>
+                                        </v-row>
+                                        <v-row>
+                                            <v-col>
+                                                <v-btn
+                                                    type="submit"
+                                                    color="primary"
+                                                    :disabled="!isFormValid"
+                                                >
+                                                    Siguiente
+                                                </v-btn>
+                                            </v-col>
+                                        </v-row>
+                                    </v-container>
+                                </v-form>
+                            </v-card>
+                        </template>
 
-            <template v-slot:item.2>
-                <v-card class="ma-auto pa-5">
-                    <v-card-title> Conductor </v-card-title>
-                    <v-form ref="driverForm" @submit.prevent="registerVehicle">
-                        <div class="d-md-flex g-4 mb-4 align-center">
-                            <div class="d-flex justify-center">
-                                <label for="fileCar">
-                                    <v-avatar
-                                        size="300"
-                                        class="mr-md-2 mx-auto rounded-lg my-10 bg-grey-lighten-2"
-                                    >
-                                        <v-img
-                                            :src="photoCarUrl"
-                                            alt="Avatar"
-                                            width="100%"
-                                            height="100%"
-                                            cover
-                                            v-if="photoCarUrl"
-                                        />
-                                        <v-img
-                                            v-else
-                                            src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
-                                        />
-                                    </v-avatar>
-                                </label>
-                            </div>
-                            <div class="w-100 ps-5">
-                                <v-file-input
-                                    id="fileCar"
-                                    label="Foto"
-                                    variant="outlined"
-                                    required
-                                    accept="image/*"
-                                    :model-value="formVehicle.picture"
-                                    @update:model-value="
-                                        (file) =>
-                                            updateImage({
-                                                file,
-                                                field: 'vehicle',
-                                            })
-                                    "
-                                />
+                        <template v-slot:item.2>
+                            <v-card class="ma-auto pa-5">
+                                <v-card-title> Conductor </v-card-title>
+                                <v-form
+                                    ref="driverForm"
+                                    @submit.prevent="registerVehicle"
+                                >
+                                    <v-container>
+                                        <v-row>
+                                            <v-col
+                                                cols="12"
+                                                md="6"
+                                                align-self="center"
+                                            >
+                                                <label for="fileCar">
+                                                    <v-avatar
+                                                        size="300"
+                                                        class="mr-md-2 mx-auto rounded-lg my-10 bg-grey-lighten-2"
+                                                    >
+                                                        <v-img
+                                                            :src="photoCarUrl"
+                                                            alt="Avatar"
+                                                            width="100%"
+                                                            height="100%"
+                                                            cover
+                                                            v-if="photoCarUrl"
+                                                        />
+                                                        <v-img
+                                                            v-else
+                                                            src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
+                                                        />
+                                                    </v-avatar>
+                                                </label>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-file-input
+                                                    id="fileCar"
+                                                    label="Foto"
+                                                    variant="outlined"
+                                                    required
+                                                    accept="image/*"
+                                                    :model-value="
+                                                        formVehicle.picture
+                                                    "
+                                                    @update:model-value="
+                                                        (file) =>
+                                                            updateImage({
+                                                                file,
+                                                                field: 'vehicle',
+                                                            })
+                                                    "
+                                                />
 
-                                <v-text-field
-                                    prepend-icon="mdi-card-bulleted-outline"
-                                    v-model="formVehicle.plate"
-                                    label="Placa"
-                                    type="text"
-                                    required
-                                    :rules="formRules.plate"
-                                    variant="outlined"
-                                    class="mb-4"
-                                    @input="
-                                        formVehicle.plate =
-                                            formVehicle.plate.toUpperCase()
-                                    "
-                                />
+                                                <v-text-field
+                                                    prepend-icon="mdi-card-bulleted-outline"
+                                                    v-model="formVehicle.plate"
+                                                    label="Placa"
+                                                    type="text"
+                                                    required
+                                                    :rules="formRules.plate"
+                                                    variant="outlined"
+                                                    class="mb-4"
+                                                    @input="
+                                                        formVehicle.plate =
+                                                            formVehicle.plate.toUpperCase()
+                                                    "
+                                                />
 
-                                <v-autocomplete
-                                    label="Año"
-                                    variant="outlined"
-                                    v-model="formVehicle.year"
-                                    :items="yearsList"
-                                    clearable
-                                    prepend-icon="mdi-calendar-range"
-                                />
+                                                <v-autocomplete
+                                                    label="Año"
+                                                    variant="outlined"
+                                                    v-model="formVehicle.year"
+                                                    :items="yearsList"
+                                                    clearable
+                                                    prepend-icon="mdi-calendar-range"
+                                                />
 
-                                <v-autocomplete
-                                    label="Marca"
-                                    variant="outlined"
-                                    v-model="formVehicle.brand_id"
-                                    :items="carBrands"
-                                    item-title="name"
-                                    item-value="_id"
-                                    :return-object="false"
-                                    clearable
-                                    prepend-icon="mdi-copyright"
-                                />
+                                                <v-autocomplete
+                                                    label="Marca"
+                                                    variant="outlined"
+                                                    v-model="
+                                                        formVehicle.brand_id
+                                                    "
+                                                    :items="carBrands"
+                                                    item-title="name"
+                                                    item-value="_id"
+                                                    :return-object="false"
+                                                    clearable
+                                                    prepend-icon="mdi-copyright"
+                                                />
 
-                                <v-autocomplete
-                                    v-model="formVehicle.model_id"
-                                    :items="availableModels"
-                                    item-title="name"
-                                    item-value="_id"
-                                    label="Modelo"
-                                    variant="outlined"
-                                    :disabled="!availableModels.length"
-                                    :return-object="false"
-                                    clearable
-                                    prepend-icon="mdi-copyright"
-                                />
+                                                <v-autocomplete
+                                                    v-model="
+                                                        formVehicle.model_id
+                                                    "
+                                                    :items="availableModels"
+                                                    item-title="name"
+                                                    item-value="_id"
+                                                    label="Modelo"
+                                                    variant="outlined"
+                                                    :disabled="
+                                                        !availableModels.length
+                                                    "
+                                                    :return-object="false"
+                                                    clearable
+                                                    prepend-icon="mdi-copyright"
+                                                />
 
-                                <v-text-field
-                                    prepend-icon="mdi-palette"
-                                    v-model="formVehicle.color"
-                                    label="Color"
-                                    type="text"
-                                    required
-                                    :rules="formRules.color"
-                                    variant="outlined"
-                                    class="mb-4"
-                                    @input="
-                                        formVehicle.color =
-                                            formVehicle.color.toUpperCase()
-                                    "
-                                />
+                                                <v-text-field
+                                                    prepend-icon="mdi-palette"
+                                                    v-model="formVehicle.color"
+                                                    label="Color"
+                                                    type="text"
+                                                    required
+                                                    :rules="formRules.color"
+                                                    variant="outlined"
+                                                    class="mb-4"
+                                                    @input="
+                                                        formVehicle.color =
+                                                            formVehicle.color.toUpperCase()
+                                                    "
+                                                />
 
-                                <v-text-field
-                                    prepend-icon="mdi-account-group"
-                                    v-model="formVehicle.capacity"
-                                    label="Capacidad"
-                                    type="number"
-                                    required
-                                    :rules="formRules.capacity"
-                                    variant="outlined"
-                                    class="mb-4"
-                                    :min="2"
-                                    :max="9"
-                                />
-                            </div>
-                        </div>
+                                                <v-text-field
+                                                    prepend-icon="mdi-account-group"
+                                                    v-model="
+                                                        formVehicle.capacity
+                                                    "
+                                                    label="Capacidad"
+                                                    type="number"
+                                                    required
+                                                    :rules="formRules.capacity"
+                                                    variant="outlined"
+                                                    class="mb-4"
+                                                    :min="2"
+                                                    :max="9"
+                                                />
 
-                        <div class="w-100 d-flex justify-space-between">
-                            <v-btn
-                                type="button"
-                                color="primary"
-                                @click="step = 1"
-                                variant="tonal"
-                            >
-                                Atrás
-                            </v-btn>
-                            <v-btn
-                                type="submit"
-                                color="green"
-                                :disabled="!isFormVehicleValid"
-                                >Crear</v-btn
-                            >
-                        </div>
-                    </v-form>
-                </v-card>
-            </template>
-        </v-stepper>
-        <v-alert v-if="error" type="error" class="message-toast">
-            {{ error }}
-        </v-alert>
+                                                <v-autocomplete
+                                                    label="Estado inicial del vehículo"
+                                                    variant="outlined"
+                                                    v-model="formVehicle.status"
+                                                    :items="carStatuses"
+                                                    item-title="description"
+                                                    item-value="id"
+                                                    :return-object="false"
+                                                    prepend-icon="mdi-copyright"
+                                                />
+                                            </v-col>
+                                        </v-row>
+                                        <v-row>
+                                            <v-col cols="6" md="6">
+                                                <v-btn
+                                                    type="button"
+                                                    color="primary"
+                                                    @click="step = 1"
+                                                    variant="tonal"
+                                                >
+                                                    Atrás
+                                                </v-btn>
+                                            </v-col>
+                                            <v-col cols="6" md="6">
+                                                <v-btn
+                                                    type="submit"
+                                                    color="green"
+                                                    :disabled="
+                                                        !isFormVehicleValid
+                                                    "
+                                                    >Crear</v-btn
+                                                >
+                                            </v-col>
+                                        </v-row>
+                                    </v-container>
+                                </v-form>
+                            </v-card>
+                        </template>
+                    </v-stepper>
+                </v-col>
+            </v-row>
+        </v-container>
     </div>
 </template>
 
@@ -332,8 +407,8 @@ import { useVehicleStore } from "../../stores/vehicles";
 import type { CarBrandResponse } from "../../types/carBrand";
 import type { VehicleForm } from "../../types/vehicle";
 import router from "../../router";
-import Swal from "sweetalert2";
-import { showToast } from "../../utils/swalToast";
+import { ConfirmAction, ShowToast } from "../../utils/notification";
+import { carStatuses, STATUSES } from "../../constants/vehicle";
 
 const vehicleStore = useVehicleStore();
 const error = ref("");
@@ -391,7 +466,8 @@ const isFormVehicleValid = computed(() => {
         formVehicle.capacity > 1 &&
         formVehicle.capacity < 10 &&
         formVehicle.picture !== null &&
-        ONLY_TEXT_PATTERN.test(formVehicle.color)
+        ONLY_TEXT_PATTERN.test(formVehicle.color) &&
+        formVehicle.status
     );
 });
 
@@ -413,6 +489,7 @@ const formVehicle = reactive<VehicleForm>({
     color: "",
     capacity: null,
     picture: null,
+    status: null,
 });
 
 const formRules = {
@@ -512,7 +589,7 @@ async function getCarBrands() {
 
         carBrands.value = data;
     } catch (error) {
-        showToast({ message: vehicleStore.error, icon: "error" });
+        ShowToast({ message: vehicleStore.error, icon: "error" });
         console.error("Error al obtener usuarios:", error);
     }
 }
@@ -521,36 +598,34 @@ async function registerVehicle() {
     error.value = "";
     if (!isFormVehicleValid || !isFormValid) return;
 
-    Swal.fire({
-        title: "¿Seguro que desea registrar los datos?",
-        text: "Verifique que los datos tanto del conductor como del vehículo sean correctos.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#4CAF50",
-        cancelButtonColor: "#BDBDBD",
-        confirmButtonText: "Aceptar",
-        cancelButtonText: "Cancelar",
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
+    try {
+        await ConfirmAction({
+            title: "¿Seguro que desea registrar los datos?",
+            text: `Verifique que los datos tanto del conductor como del vehículo sean correctos${
+                formVehicle.status === STATUSES.IN_SERVICE
+                    ? "; recuerde asignar una ruta al vehículo en la pantalla principal"
+                    : ""
+            }.`,
+            onConfirm: async () => {
                 const response = await vehicleStore.createVehicle({
                     driver: formDriver,
                     vehicle: formVehicle,
                 });
-                if (response && response.driver && response.vehicle)
-                    return router.push({
+
+                if (response?.driver && response?.vehicle) {
+                    router.push({
                         path: "/vehicles",
                         query: { msg: "Vehículo registrado de manera exitosa" },
                     });
-            } catch (err) {
-                showToast({
-                    message:
-                        vehicleStore.error || "Error al registrar vehículo.",
-                    icon: "error",
-                });
-            }
-        }
-    });
+                }
+            },
+        });
+    } catch (error) {
+        ShowToast({
+            message: vehicleStore.error || "Error al registrar vehículo.",
+            icon: "error",
+        });
+    }
 }
 
 onMounted(() => {
@@ -559,14 +634,4 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-.form {
-    width: 300px;
-}
-
-.message-toast {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-}
-</style>
+<style lang="scss" scoped></style>

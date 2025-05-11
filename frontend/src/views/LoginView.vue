@@ -55,7 +55,7 @@ import { onMounted, ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useRoute } from "vue-router";
 import { email, password } from "../constants/formRules";
-import { showToast } from "../utils/swalToast";
+import { ShowToast } from "../utils/notification";
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -73,7 +73,7 @@ const handleLogin = async () => {
     const loginError = await auth.login(form.value);
 
     if (loginError) {
-        showToast({ message: auth.error, icon: "error" });
+        ShowToast({ message: (auth.error), icon: "error" });
     }
 };
 
@@ -88,7 +88,7 @@ const form = ref({
 
 onMounted(() => {
     if (message && typeof message === "string") {
-        showToast({ message, icon: "success" });
+        ShowToast({ message, icon: "success" });
     }
 });
 </script>

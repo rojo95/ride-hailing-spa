@@ -6,6 +6,7 @@ import { handleErrorMessage } from "../utils/handleErrorMessage";
 import VehicleService from "../services/vehicles.service";
 import { IRouteBase, IRouteUpdateStatus } from "../models/route.model";
 import { STATUSES } from "../constants/routes";
+import { STATUSES as VEHICLE_STATUSES } from "../constants/vehicle";
 import { decodeTokenFromRequest } from "../utils/decodeToken";
 
 export default class RouteController {
@@ -42,6 +43,8 @@ export default class RouteController {
         const { from, to, status, from_address, to_address, vehicle_id } =
             req.body;
 
+        let routeId = null;
+
         try {
             const { id: authId } = decodeTokenFromRequest(req);
 
@@ -54,7 +57,10 @@ export default class RouteController {
                 vehicle._id
             );
 
-            if (currentRoute?.status === STATUSES.ACTIVE || !vehicle.status) {
+            if (
+                vehicle.status === VEHICLE_STATUSES.MAINTENANCE ||
+                currentRoute?.status === STATUSES.ACTIVE
+            ) {
                 throw Error(
                     "El vehículo no se encuentra disponible para asignarle una nueva ruta"
                 );
@@ -69,10 +75,19 @@ export default class RouteController {
                 vehicle_id,
                 createdBy: authId,
             });
+
+            routeId = route._id;
+
+            await VehicleService.updateStatus({
+                id: vehicle_id,
+                status: VEHICLE_STATUSES.IN_SERVICE,
+            });
             res.status(200).json(route);
         } catch (error) {
             logger.debug(`Error creating route: ${req.originalUrl}`);
             logger.error(error);
+
+            if (routeId) await RouteService.deleteById(routeId);
 
             res.status(500).json({
                 error: handleErrorMessage({

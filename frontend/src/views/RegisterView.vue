@@ -68,7 +68,7 @@
 import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { email, password } from "../constants/formRules";
-import { showToast } from "../utils/swalToast";
+import { ShowToast } from "../utils/notification";
 
 const auth = useAuthStore();
 const valid = ref<boolean>(false);
@@ -83,7 +83,7 @@ const handleForm = async () => {
     try {
         await auth.registerUser(form.value);
     } catch (err) {
-        showToast({
+        ShowToast({
             message: auth.error || "Error al registrar usuario.",
             icon: "error",
         });

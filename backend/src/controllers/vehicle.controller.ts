@@ -84,6 +84,7 @@ export default class VehicleController {
             picture,
             email,
             phone,
+            status,
         } = req.body;
 
         let driverId: Types.ObjectId | null = null;
@@ -130,6 +131,7 @@ export default class VehicleController {
                 color,
                 capacity,
                 picture,
+                status,
                 driver_id: driverId,
                 createdBy: authId,
             });

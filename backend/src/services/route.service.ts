@@ -57,4 +57,9 @@ export default class RouteService {
 
         return updatedRoute;
     }
+
+    static async deleteById(_id: Types.ObjectId) {
+        const deleted = await Route.findByIdAndDelete(_id);
+        return deleted;
+    }
 }

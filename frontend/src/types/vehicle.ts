@@ -24,6 +24,7 @@ export interface VehicleForm {
     color: string;
     capacity: number | null;
     picture: File | null;
+    status: number | null;
 }
 
 export interface VehiclesResponse {

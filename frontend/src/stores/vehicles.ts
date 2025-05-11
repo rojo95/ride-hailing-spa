@@ -111,6 +111,7 @@ export const useVehicleStore = defineStore("vehicles", () => {
                         capacity: vehicle.capacity,
                         avatar: urlBase + avatarFile?.url,
                         picture: urlBase + pictureFile?.url,
+                        status: vehicle.status,
                     },
                 });
 

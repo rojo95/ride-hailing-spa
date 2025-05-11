@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useUserStore } from "../stores/users";
-import { showToast } from "../utils/swalToast";
+import { ShowToast } from "../utils/notification";
 
 const userStore = useUserStore();
 const items = ref<{ email: string; role: string }[]>([]); // Hacer items reactivo
@@ -38,7 +38,7 @@ async function getUsers() {
 
         items.value = users; // Asignar los usuarios a items
     } catch (error) {
-        showToast({ message: userStore.error, icon: "error" });
+        ShowToast({ message: userStore.error, icon: "error" });
         console.error("Error al obtener usuarios:", error);
     }
 }

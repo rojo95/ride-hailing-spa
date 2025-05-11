@@ -12,7 +12,7 @@ export interface IVehicle extends Document {
     color: string;
     capacity: number;
     driver_id: Types.ObjectId;
-    status: boolean;
+    status: number;
     picture: string;
     routes?: IRoute[];
     createdBy: Types.ObjectId;
@@ -35,7 +35,7 @@ const vehicleSchema = new Schema<IVehicle>(
             required: true,
             ref: Driver,
         },
-        status: { type: Boolean, default: true },
+        status: { type: Number, default: 1 },
         picture: { type: String, required: true },
         createdBy: {
             type: Schema.Types.ObjectId,
