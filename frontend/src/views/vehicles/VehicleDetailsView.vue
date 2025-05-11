@@ -95,6 +95,42 @@
                                     <v-avatar>
                                         <v-icon
                                             color="indigo"
+                                            icon="mdi-phone"
+                                        ></v-icon>
+                                    </v-avatar>
+                                </template>
+
+                                <v-list-item-title v-if="vehicle">
+                                    {{ vehicle?.driver_id.phone }}
+                                </v-list-item-title>
+                                <v-list-item-subtitle>
+                                    Número de teléfono
+                                </v-list-item-subtitle>
+                            </v-list-item>
+
+                            <v-list-item>
+                                <template v-slot:prepend>
+                                    <v-avatar>
+                                        <v-icon
+                                            color="indigo"
+                                            icon="mdi-email"
+                                        ></v-icon>
+                                    </v-avatar>
+                                </template>
+
+                                <v-list-item-title v-if="vehicle">
+                                    {{ vehicle?.driver_id.email }}
+                                </v-list-item-title>
+                                <v-list-item-subtitle>
+                                    Correo electrónico
+                                </v-list-item-subtitle>
+                            </v-list-item>
+
+                            <v-list-item>
+                                <template v-slot:prepend>
+                                    <v-avatar>
+                                        <v-icon
+                                            color="indigo"
                                             icon="mdi-clock-time-eight-outline"
                                         ></v-icon>
                                     </v-avatar>
@@ -110,6 +146,7 @@
                         </v-list>
                     </v-card>
                 </v-col>
+
                 <v-col cols="12" sm="9" md="6" lg="3">
                     <v-card class="mx-auto mb-10">
                         <v-img

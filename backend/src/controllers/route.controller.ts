@@ -6,8 +6,6 @@ import { handleErrorMessage } from "../utils/handleErrorMessage";
 import VehicleService from "../services/vehicles.service";
 import { IRouteBase, IRouteUpdateStatus } from "../models/route.model";
 import { STATUSES } from "../constants/routes";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { jwtConfig } from "../config/jwt.config";
 import { decodeTokenFromRequest } from "../utils/decodeToken";
 
 export default class RouteController {
@@ -48,8 +46,6 @@ export default class RouteController {
             const { id: authId } = decodeTokenFromRequest(req);
 
             if (!authId) throw Error("No se ha obtenido id de usuario");
-
-            logger.debug(authId);
 
             const vehicle = await VehicleService.vehicleById(vehicle_id);
             if (!vehicle) throw Error("Vehículo no encontrado");

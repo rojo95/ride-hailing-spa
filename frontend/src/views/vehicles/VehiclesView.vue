@@ -602,8 +602,8 @@ async function createRoute() {
     isActiveModal.value = false;
 
     Swal.fire({
-        title: "¿Seguro que desea registrar los datos?",
-        text: "Verifique que los datos tanto del conductor como del vehículo sean correctos.",
+        title: "¿Desea confirmar la ruta?",
+        text: 'El estatus del conductor se cambiará a "En Servicio".',
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#4CAF50",
@@ -633,6 +633,10 @@ async function createRoute() {
                     }
 
                     activeVehicle.value = null;
+                    showToast({
+                        message: "Ruta asignada de manera exitosa.",
+                        icon: "success",
+                    });
                 } catch (err) {
                     showToast({
                         message:
@@ -688,6 +692,11 @@ async function updateRoute() {
 
                     activeVehicle.value = null;
                     newStatusRoute.value = null;
+
+                    showToast({
+                        message: "Estado actualizado correctamente.",
+                        icon: "success",
+                    });
                 } catch (err) {
                     showToast({
                         message:
