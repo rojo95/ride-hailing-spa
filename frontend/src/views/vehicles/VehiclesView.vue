@@ -299,11 +299,11 @@
                 <v-card-text>
                     <div class="pb-3 d-flex ga-10">
                         <p>
-                            <strong v-if="origen">Origen:</strong> {{ origen }}
+                            <strong v-if="origin">Origen:</strong> {{ origin }}
                         </p>
                         <p>
-                            <strong v-if="destino">Destino:</strong>
-                            {{ destino }}
+                            <strong v-if="destination">Destino:</strong>
+                            {{ destination }}
                         </p>
                     </div>
                     <template v-if="isActiveModal">
@@ -421,8 +421,8 @@ const routeControl = ref<any>(null);
 const fromLatLng = ref<L.LatLng | null>(null);
 const toLatLng = ref<L.LatLng | null>(null);
 const activeVehicle = ref<string | null>(null);
-const origen = ref<string>("");
-const destino = ref<string>("");
+const origin = ref<string>("");
+const destination = ref<string>("");
 const blockMapFunctions = ref(false);
 const newStatusRoute = ref<{ id: number; name: string } | null>(null);
 const isLoading = ref(false);
@@ -446,7 +446,7 @@ const statusOptions: { id: number; name: string }[] = [
 
 const modalTitle = computed(() => {
     const label = clickCount.value === 0 ? "Origen" : "Destino";
-    const selected = clickCount.value === 0 ? origen.value : destino.value;
+    const selected = clickCount.value === 0 ? origin.value : destination.value;
     return `${
         selected ? "Click para Modificar" : "Seleccione"
     } el ${label} del Viaje`;
@@ -633,8 +633,8 @@ async function openModal(vehicle: Vehicle) {
             lastRoute.to.lon,
         ];
 
-        origen.value = lastRoute?.from_address;
-        destino.value = lastRoute?.to_address;
+        origin.value = lastRoute?.from_address;
+        destination.value = lastRoute?.to_address;
 
         fromMarker.value = fromLatLngTuple;
         toMarker.value = toLatLngTuple;
@@ -690,8 +690,8 @@ function cleanMap() {
     fromLatLng.value = null;
     toLatLng.value = null;
     clickCount.value = 0;
-    origen.value = "";
-    destino.value = "";
+    origin.value = "";
+    destination.value = "";
 }
 
 function disableMapDragging() {
@@ -728,12 +728,12 @@ async function onMapClick(e: L.LeafletMouseEvent) {
         fromMarker.value = [latlng.lat, latlng.lng];
         fromLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 1;
-        await setAddress(origen, latlng.lat, latlng.lng);
+        await setAddress(origin, latlng.lat, latlng.lng);
     } else {
         toMarker.value = [latlng.lat, latlng.lng];
         toLatLng.value = L.latLng(latlng.lat, latlng.lng);
         clickCount.value = 0;
-        await setAddress(destino, latlng.lat, latlng.lng);
+        await setAddress(destination, latlng.lat, latlng.lng);
         drawRoute();
     }
 }
@@ -772,7 +772,7 @@ async function createRoute() {
         !activeVehicle?.value ||
         !fromLatLng.value ||
         !toLatLng.value ||
-        !origen
+        !origin
     )
         return;
 
@@ -799,8 +799,8 @@ async function createRoute() {
                 const route = await routeStore.createRoute({
                     from,
                     to,
-                    from_address: origen.value,
-                    to_address: destino.value,
+                    from_address: origin.value,
+                    to_address: destination.value,
                     status: STATUSES.ACTIVE,
                     vehicle_id: vehicleId,
                 });
